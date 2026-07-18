@@ -89,6 +89,16 @@ is untouched and still the primary/fastest path.
 Full plan (architecture, file list, rules, phasing) is preserved at
 `C:\Users\youse\.claude\plans\replicated-mixing-sun.md` on this machine.
 
+**Phone sign-in** (added 2026-07-18): `login.html` also offers phone-number
+sign-in via Firebase's SMS `signInWithPhoneNumber`, gated by an invisible
+reCAPTCHA. Every number is assumed Israeli — no country picker, the UI just
+takes the local number and `js/login.js`'s `toE164()` normalizes it to
+`+972<digits>` (strips a leading 0), matching the same convention
+`CONFIG.whatsappNumber` already uses elsewhere. Revisit if the business
+ever needs non-Israeli customers. Untested against a real SMS send (would
+consume live Firebase quota) — logic verified directly instead; flag to
+the user if phone sign-in doesn't work in practice.
+
 **Email verification** (added 2026-07-18): email/password sign-ups get a
 verification email via Firebase Auth's `sendEmailVerification`; a banner on
 `account.html` (with a resend button) shows for unverified email/password
