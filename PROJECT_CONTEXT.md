@@ -147,13 +147,14 @@ connected to this project.
 
 ## Environment notes for Claude Code
 
-- **Git is now initialized** (local only, `master` branch, initial commit
-  "Initial site" made 2026-07-18). Not yet pushed to GitHub — no remote
-  configured. `.claude/settings.local.json` is gitignored (machine-local
-  Claude Code permissions, not project content).
-- **Remaining git step:** create an empty GitHub repo (no README/gitignore,
-  since one already exists here), then `git remote add origin <url> &&
-  git branch -M main && git push -u origin main`.
+- **Git is initialized and pushed to GitHub** (2026-07-18). Branch renamed
+  `master` → `main`. Remote: `origin` →
+  https://github.com/yousefat123/-lamias-goodies-website
+  `.claude/settings.local.json` is gitignored (machine-local Claude Code
+  permissions, not project content).
+- Auth for push worked via Windows' existing Git Credential Manager /
+  GitHub login on this machine — no token or password was entered by
+  Claude at any point.
 - All file/folder names must stay space-free (hyphens only) per explicit
   project convention.
 - **Keep this file up to date.** Update PROJECT_CONTEXT.md after each
