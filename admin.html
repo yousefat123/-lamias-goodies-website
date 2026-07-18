@@ -29,20 +29,8 @@
     <a class="back-link" href="index.html" data-i18n="backToSite">العودة إلى الموقع</a>
 
     <div id="adminLoginBox" class="admin-panel" hidden>
-      <div class="field-row">
-        <label data-i18n="emailLabel">البريد الإلكتروني</label>
-        <input type="email" id="adminEmail" autocomplete="username">
-      </div>
-      <div class="field-row">
-        <label data-i18n="passwordLabel">كلمة المرور</label>
-        <input type="password" id="adminPassword" autocomplete="current-password">
-      </div>
-      <div id="adminAuthError" class="form-error" hidden></div>
-      <div class="cta-row">
-        <button class="btn btn-primary" id="adminSignInBtn" data-i18n="signIn">تسجيل الدخول</button>
-        <button class="btn btn-ghost" id="adminGoogleBtn" data-i18n="continueWithGoogle">المتابعة عبر جوجل</button>
-      </div>
-      <a href="#" id="adminToggleModeLink" class="toggle-auth-link" data-i18n="toggleToSignUp">ليس لديك حساب؟ إنشاء حساب</a>
+      <p data-i18n="signInRequired"></p>
+      <a class="btn btn-primary" href="login.html?next=admin.html" data-i18n="signIn">تسجيل الدخول</a>
     </div>
 
     <div id="adminNotAuthorized" class="admin-panel" hidden>

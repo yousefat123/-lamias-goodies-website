@@ -64,7 +64,10 @@ const I18N = {
     checkoutWhatsapp: "إتمام الطلب عبر واتساب",
     total: "الإجمالي",
     remove: "إزالة",
-    cartWaMsg: (lines, total) => `مرحبًا، أرغب بطلب التالي:\n${lines}\n\nالإجمالي: ₪${total}`
+    cartWaMsg: (lines, total) => `مرحبًا، أرغب بطلب التالي:\n${lines}\n\nالإجمالي: ₪${total}`,
+    orDivider: "أو",
+    welcomeBack: "مرحبًا بعودتك",
+    createAccountTitle: "إنشاء حساب جديد"
   },
   he: {
     dir: "rtl",
@@ -129,7 +132,10 @@ const I18N = {
     checkoutWhatsapp: "השלמת הזמנה בוואטסאפ",
     total: "סה\"כ",
     remove: "הסרה",
-    cartWaMsg: (lines, total) => `שלום, אני רוצה להזמין:\n${lines}\n\nסה"כ: ₪${total}`
+    cartWaMsg: (lines, total) => `שלום, אני רוצה להזמין:\n${lines}\n\nסה"כ: ₪${total}`,
+    orDivider: "או",
+    welcomeBack: "ברוכים השבים",
+    createAccountTitle: "יצירת חשבון חדש"
   },
   en: {
     dir: "ltr",
@@ -194,6 +200,9 @@ const I18N = {
     checkoutWhatsapp: "Checkout via WhatsApp",
     total: "Total",
     remove: "Remove",
-    cartWaMsg: (lines, total) => `Hi, I'd like to order:\n${lines}\n\nTotal: ₪${total}`
+    cartWaMsg: (lines, total) => `Hi, I'd like to order:\n${lines}\n\nTotal: ₪${total}`,
+    orDivider: "or",
+    welcomeBack: "Welcome back",
+    createAccountTitle: "Create a new account"
   }
 };

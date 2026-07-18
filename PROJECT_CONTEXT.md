@@ -94,20 +94,39 @@ in Firebase Console). Real `firebaseConfig` values are committed in
 `js/firebase-config.js` (safe — not secrets). Auth providers, Firestore, and
 Storage were set up by the user following the checklist below.
 
-**Admin login has two paths** (both on `admin.html`): Google sign-in (auto-
-creates the Firebase Auth account on first use — no separate "sign up"
-needed), or email/password with an explicit Sign In / Sign Up toggle (added
-2026-07-18 since Google sign-in initially failed — see gotcha below). Either
-way, "admin" access is just whichever account's email matches
+**Sign-in is now a single dedicated page, `login.html`** (added 2026-07-18,
+replacing an earlier modal-based approach and admin.html's own separate
+duplicated login form — one shared implementation instead of three copies).
+Every page that needs a signed-in user (`index.html` header, `account.html`,
+`admin.html`) either links to `login.html?next=<page>` or — for in-flow
+prompts like clicking a favorite/cart button while signed out — calls
+`window.LamiaFirebase.requireLogin()`, which redirects there. On success,
+`login.html` redirects back to whatever `next` said (validated against an
+allowlist of real page names — `index.html`/`account.html`/`admin.html` —
+so this can't be abused as an open redirect). Supports Google sign-in
+(auto-creates the account on first use) and email/password with a Sign In /
+Sign Up toggle. "Admin" access is just whichever account's email matches
 `yousef3talla@gmail.com`; anyone can create an unrelated email/password
 account through the same form, it simply won't pass the admin email check
 in `firestore.rules`/`storage.rules` or in the UI gate in `js/admin.js`.
 
-**Gotcha hit during setup:** Google sign-in failed on the live GitHub Pages
-site until the deployed domain (`yousefat123.github.io`) was added to
-Firebase Console → Authentication → Settings → Authorized domains
-(`localhost` alone, added during initial setup, isn't enough — every real
-domain the site is served from needs to be added explicitly).
+**Gotchas hit during setup:**
+- Google sign-in failed on the live GitHub Pages site until the deployed
+  domain (`yousefat123.github.io`) was added to Firebase Console →
+  Authentication → Settings → Authorized domains (`localhost` alone, added
+  during initial setup, isn't enough — every real domain the site is served
+  from needs to be added explicitly).
+- Email/password sign-up failed with `auth/configuration-not-found` for
+  *any* email, which meant Firebase Authentication itself had never been
+  activated for the project (no providers configured at all) — different
+  from `auth/operation-not-allowed`, which would mean Authentication is
+  active but that specific provider is off. Fix: Firebase Console →
+  Authentication → click "Get Started" if that's what's showing instead of
+  the Sign-in method tab, then enable providers.
+- Error messages shown to the user now include the raw Firebase error code
+  (e.g. `(auth/invalid-email)`) instead of only a generic translated
+  string — added specifically because the generic message alone made this
+  class of setup problem impossible to diagnose remotely.
 
 ## Known data issues from the old hardcoded catalog (relevant to the Firestore import, not a live sheet anymore)
 
@@ -129,7 +148,9 @@ and `window.setLiveProducts()` (see Firebase section above).
 ```
 lamias-goodies-website/
   index.html              storefront: catalog + WhatsApp ordering + header
-                          sign-in/account UI (#authArea)
+                          sign-in/cart UI (#authArea, #cartArea)
+  login.html               shared sign-in/sign-up page (Google + email/pw),
+                          redirects to ?next=<page> on success
   account.html            customer's own page: profile, favorites, order
                           history (gated: shows a sign-in prompt if logged out)
   admin.html              admin panel: product CRUD + photo upload, one-time
@@ -142,18 +163,24 @@ lamias-goodies-website/
                           unreachable/unconfigured) + migration source
     firebase-config.js      Firebase CDN imports + real project config,
                           fetches live products -> window.setLiveProducts()
-    auth.js                  sign-in/up modal (email+password and Google),
-                          header avatar/dropdown, creates users/{uid} on
-                          first login, defines window.LamiaFirebase (the
-                          bridge app.js/account.js call into)
+    login.js                  login.html logic: Google/email-password
+                          sign-in+up, redirects back to the sanitized
+                          ?next= page (or index.html) on success
+    auth.js                  header avatar/dropdown + cart icon, redirects
+                          to login.html when a signed-out visitor tries to
+                          favorite/cart something, creates users/{uid} on
+                          first login, cart panel (qty controls, combined
+                          WhatsApp checkout), defines window.LamiaFirebase
+                          (the bridge app.js/account.js call into)
     account.js               account.html logic: profile form, favorites
                           list (with remove), order history list
     admin.js                 admin.html logic: auth-gated product CRUD,
                           photo upload, legacy-import button, order list
                           with mark-fulfilled/cancel controls
     app.js                   rendering, language switching, WhatsApp link
-                          building, favorite-heart + order-recording hooks,
-                          exposes window.setLiveProducts()/translateDom()
+                          building, favorite-heart + add-to-cart +
+                          order-recording hooks, exposes
+                          window.setLiveProducts()/translateDom()/getProduct()
   firestore.rules           paste into Firebase Console -> Firestore -> Rules
   storage.rules             paste into Firebase Console -> Storage -> Rules
   assets/icons/             empty, placeholder for future PWA icons

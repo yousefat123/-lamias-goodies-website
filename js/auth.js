@@ -1,7 +1,6 @@
 import { auth, db, isConfigured } from "./firebase-config.js";
 import {
-  onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, signOut as fbSignOut
+  onAuthStateChanged, signOut as fbSignOut
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
   doc, getDoc, setDoc, deleteDoc, addDoc, collection, onSnapshot, serverTimestamp
@@ -14,28 +13,17 @@ function t() {
   return I18N[lang()];
 }
 
-// ---- Modal markup, injected once ----
+// Sign-in/sign-up itself lives on the dedicated login.html page (shared by
+// every page on the site), not in a modal here. This just sends the visitor
+// there and back to wherever they were.
+function redirectToLogin() {
+  const here = location.pathname.split("/").pop() || "index.html";
+  location.href = `login.html?next=${encodeURIComponent(here)}`;
+}
+
+// ---- Cart modal markup, injected once ----
 
 document.body.insertAdjacentHTML("beforeend", `
-<div class="modal-overlay" id="authModalOverlay" hidden>
-  <div class="modal">
-    <button class="modal-close" id="authModalClose" aria-label="close">&times;</button>
-    <div class="field-row">
-      <label data-i18n="emailLabel"></label>
-      <input type="email" id="authEmail" autocomplete="username">
-    </div>
-    <div class="field-row">
-      <label data-i18n="passwordLabel"></label>
-      <input type="password" id="authPassword" autocomplete="current-password">
-    </div>
-    <div class="form-error" id="authModalError" hidden></div>
-    <div class="cta-row">
-      <button class="btn btn-primary" id="authSubmitBtn" data-i18n="signIn"></button>
-      <button class="btn btn-ghost" id="authGoogleBtn" data-i18n="continueWithGoogle"></button>
-    </div>
-    <a href="#" class="toggle-auth-link" id="authToggleModeLink" data-i18n="toggleToSignUp"></a>
-  </div>
-</div>
 <div class="modal-overlay" id="cartModalOverlay" hidden>
   <div class="modal cart-modal">
     <button class="modal-close" id="cartModalClose" aria-label="close">&times;</button>
@@ -50,78 +38,7 @@ document.body.insertAdjacentHTML("beforeend", `
 </div>
 `);
 
-const overlay = document.getElementById("authModalOverlay");
-const modalError = document.getElementById("authModalError");
-const submitBtn = document.getElementById("authSubmitBtn");
-const toggleLink = document.getElementById("authToggleModeLink");
-let authMode = "signin";
-
-function applyModalMode() {
-  submitBtn.setAttribute("data-i18n", authMode === "signin" ? "signIn" : "signUp");
-  toggleLink.setAttribute("data-i18n", authMode === "signin" ? "toggleToSignUp" : "toggleToSignIn");
-  window.translateDom?.(overlay);
-}
-
-function openModal() {
-  modalError.hidden = true;
-  document.getElementById("authEmail").value = "";
-  document.getElementById("authPassword").value = "";
-  authMode = "signin";
-  applyModalMode();
-  overlay.hidden = false;
-}
-function closeModal() {
-  overlay.hidden = true;
-}
-
-document.getElementById("authModalClose").addEventListener("click", closeModal);
-overlay.addEventListener("click", (e) => {
-  if (e.target === overlay) closeModal();
-});
-toggleLink.addEventListener("click", (e) => {
-  e.preventDefault();
-  authMode = authMode === "signin" ? "signup" : "signin";
-  modalError.hidden = true;
-  applyModalMode();
-});
-
-function showModalError(err) {
-  const detail = err?.code || err?.message || "";
-  modalError.textContent = t().authErrorGeneric + (detail ? ` (${detail})` : "");
-  modalError.hidden = false;
-  console.error(err);
-}
-
-if (isConfigured) {
-  document.getElementById("authSubmitBtn").addEventListener("click", async () => {
-    modalError.hidden = true;
-    const email = document.getElementById("authEmail").value.trim();
-    const password = document.getElementById("authPassword").value;
-    try {
-      if (authMode === "signup") {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
-      closeModal();
-    } catch (err) {
-      showModalError(err);
-    }
-  });
-
-  document.getElementById("authGoogleBtn").addEventListener("click", async () => {
-    modalError.hidden = true;
-    try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-      closeModal();
-    } catch (err) {
-      showModalError(err);
-    }
-  });
-}
-
 document.addEventListener("langchange", () => {
-  applyModalMode();
   renderAuthArea(auth?.currentUser || null);
   renderCartButton();
   renderCartItems();
@@ -156,12 +73,12 @@ function renderAuthArea(user) {
   authArea.innerHTML = "";
 
   if (!user) {
-    const btn = document.createElement("button");
-    btn.className = "btn btn-ghost auth-signin-btn";
-    btn.setAttribute("data-i18n", "signIn");
-    btn.textContent = t().signIn;
-    btn.addEventListener("click", openModal);
-    authArea.appendChild(btn);
+    const link = document.createElement("a");
+    link.href = "login.html";
+    link.className = "btn btn-ghost auth-signin-btn";
+    link.setAttribute("data-i18n", "signIn");
+    link.textContent = t().signIn;
+    authArea.appendChild(link);
     return;
   }
 
@@ -201,7 +118,7 @@ function renderCartButton() {
     </button>
   `;
   cartArea.querySelector("#cartOpenBtn").addEventListener("click", () => {
-    if (!auth?.currentUser) { openModal(); return; }
+    if (!auth?.currentUser) { redirectToLogin(); return; }
     openCartModal();
   });
 }
@@ -312,7 +229,7 @@ if (isConfigured) {
 
 async function updateCartQty(productId, qty) {
   const user = auth?.currentUser;
-  if (!user) { openModal(); return; }
+  if (!user) { redirectToLogin(); return; }
   const ref = doc(db, "users", user.uid, "cart", productId);
   if (qty <= 0) {
     await deleteDoc(ref);
@@ -364,11 +281,11 @@ async function checkoutCart() {
 
 window.LamiaFirebase = {
   currentUser: () => auth?.currentUser || null,
-  requireLogin: () => openModal(),
+  requireLogin: () => redirectToLogin(),
   get favoritesSet() { return favoritesSet; },
   toggleFavorite: async (productId) => {
     const user = auth?.currentUser;
-    if (!user) { openModal(); return; }
+    if (!user) { redirectToLogin(); return; }
     const ref = doc(db, "users", user.uid, "favorites", productId);
     if (favoritesSet.has(productId)) {
       await deleteDoc(ref);
@@ -378,7 +295,7 @@ window.LamiaFirebase = {
   },
   addToCart: async (productId) => {
     const user = auth?.currentUser;
-    if (!user) { openModal(); return; }
+    if (!user) { redirectToLogin(); return; }
     await updateCartQty(productId, (cartMap.get(productId) || 0) + 1);
   },
   recordOrder: async (product, orderLang) => {

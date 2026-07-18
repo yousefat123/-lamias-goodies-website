@@ -1,7 +1,6 @@
 import { auth, db, storage, isConfigured } from "./firebase-config.js";
 import {
-  onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, signOut as fbSignOut
+  onAuthStateChanged, signOut as fbSignOut
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
   collection, doc, setDoc, updateDoc, deleteDoc, getDocs, query, orderBy, serverTimestamp
@@ -30,73 +29,18 @@ document.querySelectorAll(".lang-switch button").forEach((b) => {
   b.addEventListener("click", () => {
     currentLang = b.getAttribute("data-setlang");
     translateDom();
-    applyAuthMode();
   });
 });
 translateDom();
 
+// Signing in/up itself happens on the shared login.html page (linked from
+// #adminLoginBox below) — this file only gates content once Firebase
+// reports whether someone, and specifically the admin, is signed in.
 const loginBox = document.getElementById("adminLoginBox");
 const notAuthorizedBox = document.getElementById("adminNotAuthorized");
 const adminContent = document.getElementById("adminContent");
-const authErrorEl = document.getElementById("adminAuthError");
 
-function showAuthError(err) {
-  const detail = err?.code || err?.message || "";
-  authErrorEl.textContent = I18N[currentLang].authErrorGeneric + (detail ? ` (${detail})` : "");
-  authErrorEl.hidden = false;
-  console.error(err);
-}
-
-const toggleModeLink = document.getElementById("adminToggleModeLink");
-const signInBtn = document.getElementById("adminSignInBtn");
-let authMode = "signin"; // "signin" | "signup"
-
-function applyAuthMode() {
-  const t = I18N[currentLang];
-  signInBtn.textContent = authMode === "signin" ? t.signIn : t.signUp;
-  toggleModeLink.textContent = authMode === "signin" ? t.toggleToSignUp : t.toggleToSignIn;
-}
-
-toggleModeLink.addEventListener("click", (e) => {
-  e.preventDefault();
-  authMode = authMode === "signin" ? "signup" : "signin";
-  authErrorEl.hidden = true;
-  applyAuthMode();
-});
-
-if (!isConfigured) {
-  loginBox.hidden = false;
-  authErrorEl.textContent = "Firebase is not configured yet — see js/firebase-config.js.";
-  authErrorEl.hidden = false;
-  signInBtn.disabled = true;
-  document.getElementById("adminGoogleBtn").disabled = true;
-} else {
-  applyAuthMode();
-
-  signInBtn.addEventListener("click", async () => {
-    authErrorEl.hidden = true;
-    const email = document.getElementById("adminEmail").value.trim();
-    const password = document.getElementById("adminPassword").value;
-    try {
-      if (authMode === "signup") {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
-    } catch (err) {
-      showAuthError(err);
-    }
-  });
-
-  document.getElementById("adminGoogleBtn").addEventListener("click", async () => {
-    authErrorEl.hidden = true;
-    try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-    } catch (err) {
-      showAuthError(err);
-    }
-  });
-
+if (isConfigured) {
   document.getElementById("adminSignOutBtn").addEventListener("click", () => fbSignOut(auth));
   document.getElementById("adminSignOutBtn2").addEventListener("click", () => fbSignOut(auth));
 
@@ -117,6 +61,8 @@ if (!isConfigured) {
     loadProducts();
     loadOrders();
   });
+} else {
+  loginBox.hidden = false;
 }
 
 // ---- Product form (add/edit) ----

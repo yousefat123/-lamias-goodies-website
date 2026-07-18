@@ -206,6 +206,28 @@ footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
   color:#8a7a66;cursor:pointer;
 }
 
+/* dedicated login/signup page */
+.auth-page-wrap{
+  padding:40px 0 60px;display:flex;flex-direction:column;align-items:center;
+}
+.auth-page-wrap .back-link{align-self:flex-start;}
+.auth-page-card{
+  background:var(--cream);border:1px solid var(--line);border-radius:18px;
+  padding:34px 28px;width:100%;max-width:380px;text-align:center;
+}
+.auth-page-title{font-size:22px;color:var(--ink);margin-bottom:20px;}
+.auth-google-btn{width:100%;justify-content:center;}
+.auth-divider{
+  display:flex;align-items:center;gap:10px;margin:20px 0;
+  color:#b0a390;font-size:12px;font-weight:600;
+}
+.auth-divider::before,.auth-divider::after{
+  content:"";flex:1;height:1px;background:var(--line);
+}
+.auth-page-card form{text-align:start;}
+.auth-submit-btn{width:100%;justify-content:center;margin-top:4px;}
+.auth-page-card .toggle-auth-link{text-align:center;}
+
 /* cart button + badge */
 .cart-btn{
   position:relative;background:transparent;border:none;cursor:pointer;
