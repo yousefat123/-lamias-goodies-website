@@ -89,6 +89,21 @@ is untouched and still the primary/fastest path.
 Full plan (architecture, file list, rules, phasing) is preserved at
 `C:\Users\youse\.claude\plans\replicated-mixing-sun.md` on this machine.
 
+**Forgot password** (added 2026-07-18): a link on `login.html`, visible only
+in sign-in mode, sends a Firebase password reset email to whatever's typed
+in the email field (`sendPasswordResetEmail`).
+
+**Cart/favorites "not showing" report** (2026-07-18): user reported not
+seeing the cart/favorite UI on the live site. Direct inspection of the live
+site at that moment showed both rendering correctly (5 favorite hearts, 5
+add-to-cart buttons, header cart icon, all present, no console errors) —
+most likely a stale-cache issue (GitHub Pages + browser caching has caused
+this exact confusion before, e.g. the admin sign-in button). Told the user
+to hard-refresh and clarify whether they were signed in when testing
+(clicking either while signed out correctly redirects to login, by their
+own earlier request — that's not a bug). Follow up if they report a real
+reproduction after a hard refresh + being signed in.
+
 **Phone sign-in** (added 2026-07-18): `login.html` also offers phone-number
 sign-in via Firebase's SMS `signInWithPhoneNumber`, gated by an invisible
 reCAPTCHA. Every number is assumed Israeli — no country picker, the UI just
