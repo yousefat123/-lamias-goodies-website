@@ -41,7 +41,8 @@ const adminContent = document.getElementById("adminContent");
 const authErrorEl = document.getElementById("adminAuthError");
 
 function showAuthError(err) {
-  authErrorEl.textContent = I18N[currentLang].authErrorGeneric;
+  const detail = err?.code || err?.message || "";
+  authErrorEl.textContent = I18N[currentLang].authErrorGeneric + (detail ? ` (${detail})` : "");
   authErrorEl.hidden = false;
   console.error(err);
 }

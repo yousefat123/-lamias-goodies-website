@@ -86,7 +86,8 @@ toggleLink.addEventListener("click", (e) => {
 });
 
 function showModalError(err) {
-  modalError.textContent = t().authErrorGeneric;
+  const detail = err?.code || err?.message || "";
+  modalError.textContent = t().authErrorGeneric + (detail ? ` (${detail})` : "");
   modalError.hidden = false;
   console.error(err);
 }
