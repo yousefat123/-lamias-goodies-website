@@ -70,7 +70,12 @@ const I18N = {
     createAccountTitle: "إنشاء حساب جديد",
     verificationEmailSent: "تم إرسال رابط تأكيد إلى بريدك الإلكتروني.",
     emailNotVerified: "لم يتم تأكيد بريدك الإلكتروني بعد.",
-    resendVerification: "إعادة إرسال رابط التأكيد"
+    resendVerification: "إعادة إرسال رابط التأكيد",
+    sendCode: "إرسال الرمز",
+    verificationCodeLabel: "رمز التحقق",
+    verifyCode: "تحقق",
+    phoneInvalid: "الرجاء إدخال رقم هاتف صحيح.",
+    codeSent: "تم إرسال الرمز عبر رسالة نصية."
   },
   he: {
     dir: "rtl",
@@ -141,7 +146,12 @@ const I18N = {
     createAccountTitle: "יצירת חשבון חדש",
     verificationEmailSent: "נשלח קישור אימות לכתובת המייל שלך.",
     emailNotVerified: "כתובת המייל שלך עדיין לא אומתה.",
-    resendVerification: "שליחה חוזרת של קישור האימות"
+    resendVerification: "שליחה חוזרת של קישור האימות",
+    sendCode: "שליחת קוד",
+    verificationCodeLabel: "קוד אימות",
+    verifyCode: "אימות",
+    phoneInvalid: "נא להזין מספר טלפון תקין.",
+    codeSent: "קוד נשלח אליך במסרון."
   },
   en: {
     dir: "ltr",
@@ -212,6 +222,11 @@ const I18N = {
     createAccountTitle: "Create a new account",
     verificationEmailSent: "A verification link was sent to your email.",
     emailNotVerified: "Your email address isn't verified yet.",
-    resendVerification: "Resend verification email"
+    resendVerification: "Resend verification email",
+    sendCode: "Send Code",
+    verificationCodeLabel: "Verification Code",
+    verifyCode: "Verify",
+    phoneInvalid: "Please enter a valid phone number.",
+    codeSent: "A code was sent via SMS."
   }
 };

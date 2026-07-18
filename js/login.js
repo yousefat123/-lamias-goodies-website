@@ -1,8 +1,19 @@
 import { auth, isConfigured } from "./firebase-config.js";
 import {
   onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, sendEmailVerification
+  signInWithPopup, GoogleAuthProvider, sendEmailVerification,
+  RecaptchaVerifier, signInWithPhoneNumber
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+// Every phone number on this site is Israeli for now — the UI only takes
+// the local part (e.g. "054-1234567" or "0541234567") and this fixed
+// prefix is prepended, matching CONFIG.whatsappNumber's convention
+// elsewhere in the codebase (Israel, no separate country picker yet).
+const PHONE_COUNTRY_CODE = "+972";
+function toE164(localNumber) {
+  const digits = localNumber.replace(/\D/g, "").replace(/^0/, "");
+  return digits ? `${PHONE_COUNTRY_CODE}${digits}` : null;
+}
 
 // Only ever redirect to a known page of this site — never trust the raw
 // query param, to avoid an open-redirect if this URL is ever shared/crafted.
@@ -117,6 +128,62 @@ if (!isConfigured) {
       location.href = getNextUrl();
     } catch (err) {
       showError(err);
+    }
+  });
+
+  // ---- Phone sign-in ----
+
+  const phoneError = document.getElementById("phoneError");
+  const sendCodeBtn = document.getElementById("sendCodeBtn");
+  const verifyCodeBtn = document.getElementById("verifyCodeBtn");
+  const codeFieldRow = document.getElementById("codeFieldRow");
+  let confirmationResult = null;
+  let recaptchaVerifier = null;
+
+  function showPhoneError(err) {
+    const detail = err?.code || err?.message || "";
+    phoneError.textContent = I18N[lang()].authErrorGeneric + (detail ? ` (${detail})` : "");
+    phoneError.hidden = false;
+    console.error(err);
+  }
+
+  sendCodeBtn.addEventListener("click", async () => {
+    phoneError.hidden = true;
+    const phone = toE164(document.getElementById("loginPhone").value);
+    if (!phone) {
+      phoneError.textContent = I18N[lang()].phoneInvalid;
+      phoneError.hidden = false;
+      return;
+    }
+    sendCodeBtn.disabled = true;
+    try {
+      recaptchaVerifier ??= new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" });
+      confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
+      codeFieldRow.hidden = false;
+      verifyCodeBtn.hidden = false;
+      phoneError.textContent = I18N[lang()].codeSent;
+      phoneError.className = "form-success";
+      phoneError.hidden = false;
+    } catch (err) {
+      showPhoneError(err);
+    } finally {
+      sendCodeBtn.disabled = false;
+    }
+  });
+
+  verifyCodeBtn.addEventListener("click", async () => {
+    if (!confirmationResult) return;
+    phoneError.hidden = true;
+    const code = document.getElementById("loginCode").value.trim();
+    verifyCodeBtn.disabled = true;
+    try {
+      await confirmationResult.confirm(code);
+      location.href = getNextUrl();
+    } catch (err) {
+      phoneError.className = "form-error";
+      showPhoneError(err);
+    } finally {
+      verifyCodeBtn.disabled = false;
     }
   });
 }

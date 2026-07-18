@@ -227,6 +227,14 @@ footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
 .auth-page-card form{text-align:start;}
 .auth-submit-btn{width:100%;justify-content:center;margin-top:4px;}
 .auth-page-card .toggle-auth-link{text-align:center;}
+#phoneSection{text-align:start;}
+.phone-input-group{display:flex;gap:8px;}
+.phone-prefix{
+  display:flex;align-items:center;padding:0 12px;flex-shrink:0;
+  border:1.5px solid var(--line);border-radius:10px;background:var(--card);
+  font-weight:700;color:var(--ink);font-size:14px;
+}
+.phone-input-group input{flex:1;min-width:0;}
 
 /* cart button + badge */
 .cart-btn{
