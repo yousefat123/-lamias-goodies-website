@@ -1,21 +1,37 @@
 # Lamia's Goodies — Website
 
 Trilingual (Arabic / Hebrew / English) storefront for Lamia's Goodies. Static
-HTML/CSS/JS, no build step, no framework. Ordering happens via a pre-filled
-WhatsApp message per product.
+HTML/CSS/JS, no build step, no framework. Guest ordering happens via a
+pre-filled WhatsApp message per product — no account required. Customers can
+optionally sign in (email/password or Google) for a profile, favorites, and
+order history. Product data, accounts, and orders are backed by Firebase
+(Auth + Firestore + Storage).
+
+Live site: https://yousefat123.github.io/-lamias-goodies-website/
 
 ## Project structure
 
 ```
 lamias-goodies-website/
-  index.html          entry point, references the files below
+  index.html          storefront: catalog + WhatsApp ordering + sign-in
+  account.html         customer profile, favorites, order history
+  admin.html            admin panel: product CRUD + photo upload, orders
   css/
-    styles.css         all styling
+    styles.css          all styling
   js/
-    config.js           site constants (WhatsApp number, future API URL)
-    i18n.js              UI text + category labels per language
-    products-data.js     product catalog (temporary hardcoded source)
-    app.js               rendering + language switching logic
+    config.js            WhatsApp number + admin email
+    i18n.js               UI text + category labels per language
+    products-data.js      fallback catalog (used if Firestore is
+                         unreachable) + one-time migration source
+    firebase-config.js    Firebase project config + init
+    auth.js                sign-in modal, header account UI, user doc
+                         creation, window.LamiaFirebase bridge
+    account.js              account.html logic
+    admin.js                 admin.html logic
+    app.js                    rendering + language switching + WhatsApp
+                         link building + favorites/order hooks
+  firestore.rules       Firestore security rules (paste into Console)
+  storage.rules          Storage security rules (paste into Console)
   assets/
     icons/               placeholder for future PWA icons
 ```
@@ -27,33 +43,37 @@ No build step needed. Either:
 - Serve the folder with any static server, e.g. `python3 -m http.server`
   then visit `http://localhost:8000`
 
-## Known data issues (source: Google Sheet)
+Firebase features (accounts, favorites, orders, admin panel) require real
+values in `js/firebase-config.js` and `localhost` added to Firebase
+Console → Authentication → Settings → Authorized domains. Without that,
+`js/firebase-config.js` logs a warning and every Firebase-dependent feature
+no-ops safely — guest browsing/ordering always works regardless.
 
-- `MAA-001` / `MAA-002` / `MAA-003` (date / walnut / pistachio maamoul)
-  currently share one placeholder photo — only one maamoul photo has been
-  uploaded to Drive so far. Update `photoId` in `js/products-data.js` once
-  real photos exist for each.
-- The sheet's category cell for maamoul items reads "Tradetional arabic
-  sweets" (typo). `products-data.js` already maps these to the correct
-  `maamoul` category key regardless of the sheet's text.
+## Admin access
+
+Admin panel (`admin.html`) is restricted to `yousef3talla@gmail.com`
+(`CONFIG.adminEmail` in `js/config.js` — a UI hint only; real enforcement is
+in `firestore.rules`/`storage.rules`). Sign in with Google, or use the
+email/password Sign In / Sign Up toggle on the same page.
 
 ## Next steps (in priority order)
 
-1. **Wire up live data.** Deploy the product sheet as a Google Apps Script
-   Web App, then set `CONFIG.productsApiUrl` in `js/config.js`. `app.js`
-   already has the fetch logic in `loadProducts()` — it just needs a URL.
-2. **Fix the data issues above** in the source sheet before adding many more
-   rows.
-3. **Deploy** to Vercel / Netlify / GitHub Pages for a real, testable URL.
-4. **Make it installable** — add `manifest.json` + icons in `assets/icons/`
+1. **Upload real product photos** via the admin panel (replaces the old
+   Google Drive hotlinks used as an interim value after migration).
+2. **Verify end-to-end** on the live site: sign-in, product import, a test
+   order (guest and logged-in), favorites.
+3. **Make it installable** — add `manifest.json` + icons in `assets/icons/`
    for "Add to Home Screen" support.
-5. **Soft-launch** with real customers via the WhatsApp ordering flow before
-   adding cart/payment.
-6. **Cart + payment** (Tranzila/Cardcom for Israeli card processing) only
+4. **Soft-launch** with real customers via the WhatsApp ordering flow.
+5. **Cart + payment** (Tranzila/Cardcom for Israeli card processing) only
    once real order volume justifies the added complexity.
 
 ## Config
 
 Edit `js/config.js` to change:
 - `whatsappNumber` — international format, no leading `0` or `+`
-- `productsApiUrl` — set once the Apps Script backend is deployed
+- `adminEmail` — the one account allowed into `admin.html`
+
+Edit `js/firebase-config.js`'s `firebaseConfig` object if the Firebase
+project ever changes (values come from Firebase Console → Project settings
+→ Your apps → Web app — safe to commit, not secrets).

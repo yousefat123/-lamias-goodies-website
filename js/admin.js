@@ -4,7 +4,7 @@ import {
   signInWithPopup, GoogleAuthProvider, signOut as fbSignOut
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
-  collection, doc, setDoc, updateDoc, deleteDoc, getDocs, serverTimestamp
+  collection, doc, setDoc, updateDoc, deleteDoc, getDocs, query, orderBy, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import {
   ref, uploadBytes, getDownloadURL
@@ -114,6 +114,7 @@ if (!isConfigured) {
     }
     adminContent.hidden = false;
     loadProducts();
+    loadOrders();
   });
 }
 
@@ -265,3 +266,43 @@ document.getElementById("importLegacyBtn").addEventListener("click", async () =>
     btn.disabled = false;
   }
 });
+
+// ---- Orders ----
+
+const orderListEl = document.getElementById("adminOrderList");
+
+async function loadOrders() {
+  orderListEl.textContent = I18N[currentLang].loading;
+  const snap = await getDocs(query(collection(db, "orders"), orderBy("createdAt", "desc")));
+  orderListEl.innerHTML = "";
+  if (snap.empty) {
+    orderListEl.textContent = I18N[currentLang].ordersEmpty;
+    return;
+  }
+  snap.docs.forEach((d) => {
+    const o = d.data();
+    const t = I18N[currentLang];
+    const when = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleString(currentLang) : "";
+    const row = document.createElement("div");
+    row.className = "admin-product-row";
+    row.innerHTML = `
+      <div class="admin-product-row-info">
+        <strong>${o.productName} — ₪${o.price}</strong>
+        <span>${when} · ${o.userId ? "account" : "guest"} · <span class="status-badge status-${o.status}">${t.orderStatus[o.status] || o.status}</span></span>
+      </div>
+      <div class="cta-row">
+        ${o.status !== "fulfilled" ? `<button class="btn btn-ghost" data-fulfill data-i18n="markFulfilled">${t.markFulfilled}</button>` : ""}
+        ${o.status !== "cancelled" ? `<button class="btn btn-ghost" data-cancel data-i18n="markCancelled">${t.markCancelled}</button>` : ""}
+      </div>
+    `;
+    row.querySelector("[data-fulfill]")?.addEventListener("click", async () => {
+      await updateDoc(doc(db, "orders", d.id), { status: "fulfilled" });
+      loadOrders();
+    });
+    row.querySelector("[data-cancel]")?.addEventListener("click", async () => {
+      await updateDoc(doc(db, "orders", d.id), { status: "cancelled" });
+      loadOrders();
+    });
+    orderListEl.appendChild(row);
+  });
+}

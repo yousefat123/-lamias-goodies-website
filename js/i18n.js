@@ -43,7 +43,21 @@ const I18N = {
     authErrorGeneric: "حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.",
     loading: "جارٍ التحميل...",
     toggleToSignUp: "ليس لديك حساب؟ إنشاء حساب",
-    toggleToSignIn: "لديك حساب بالفعل؟ تسجيل الدخول"
+    toggleToSignIn: "لديك حساب بالفعل؟ تسجيل الدخول",
+    myAccount: "حسابي",
+    myFavorites: "المفضلة",
+    myOrders: "طلباتي",
+    fullNameLabel: "الاسم الكامل",
+    phoneLabel: "رقم الهاتف",
+    addressLabel: "العنوان",
+    profileSaved: "تم حفظ التغييرات",
+    favoritesEmpty: "لا توجد منتجات مفضلة بعد",
+    ordersEmpty: "لا توجد طلبات بعد",
+    manageOrders: "إدارة الطلبات",
+    markFulfilled: "تم التنفيذ",
+    markCancelled: "إلغاء الطلب",
+    orderStatus: { pending: "قيد الانتظار", fulfilled: "تم التنفيذ", cancelled: "ملغى" },
+    signInRequired: "الرجاء تسجيل الدخول أولاً"
   },
   he: {
     dir: "rtl",
@@ -87,7 +101,21 @@ const I18N = {
     authErrorGeneric: "אירעה שגיאה בהתחברות. נסו שוב.",
     loading: "טוען...",
     toggleToSignUp: "אין לך חשבון? הרשמה",
-    toggleToSignIn: "יש לך כבר חשבון? התחברות"
+    toggleToSignIn: "יש לך כבר חשבון? התחברות",
+    myAccount: "החשבון שלי",
+    myFavorites: "מועדפים",
+    myOrders: "ההזמנות שלי",
+    fullNameLabel: "שם מלא",
+    phoneLabel: "טלפון",
+    addressLabel: "כתובת",
+    profileSaved: "השינויים נשמרו",
+    favoritesEmpty: "עדיין אין מוצרים במועדפים",
+    ordersEmpty: "עדיין אין הזמנות",
+    manageOrders: "ניהול הזמנות",
+    markFulfilled: "בוצע",
+    markCancelled: "ביטול הזמנה",
+    orderStatus: { pending: "ממתין", fulfilled: "בוצע", cancelled: "בוטל" },
+    signInRequired: "יש להתחבר קודם"
   },
   en: {
     dir: "ltr",
@@ -131,6 +159,20 @@ const I18N = {
     authErrorGeneric: "Something went wrong signing in. Please try again.",
     loading: "Loading...",
     toggleToSignUp: "Don't have an account? Sign Up",
-    toggleToSignIn: "Already have an account? Sign In"
+    toggleToSignIn: "Already have an account? Sign In",
+    myAccount: "My Account",
+    myFavorites: "My Favorites",
+    myOrders: "My Orders",
+    fullNameLabel: "Full Name",
+    phoneLabel: "Phone",
+    addressLabel: "Address",
+    profileSaved: "Changes saved",
+    favoritesEmpty: "No favorites yet",
+    ordersEmpty: "No orders yet",
+    manageOrders: "Manage Orders",
+    markFulfilled: "Fulfilled",
+    markCancelled: "Cancel Order",
+    orderStatus: { pending: "Pending", fulfilled: "Fulfilled", cancelled: "Cancelled" },
+    signInRequired: "Please sign in first"
   }
 };

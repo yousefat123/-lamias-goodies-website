@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lamia's Goodies — My Account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Almarai:wght@400;700&family=Rubik:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-lang="ar">
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-mark">LG</div>
+      <div class="brand-name" data-i18n="brandName">حلويات لمياء</div>
+    </div>
+    <div class="header-right">
+      <div class="lang-switch">
+        <button data-setlang="ar" class="active">AR</button>
+        <button data-setlang="he">עב</button>
+        <button data-setlang="en">EN</button>
+      </div>
+      <div id="authArea"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap admin-wrap">
+    <a class="back-link" href="index.html" data-i18n="backToSite">العودة إلى الموقع</a>
+
+    <div id="accountSignedOut" class="admin-panel" hidden>
+      <p data-i18n="signInRequired"></p>
+      <button class="btn btn-primary" id="accountSignInBtn" data-i18n="signIn"></button>
+    </div>
+
+    <div id="accountContent" hidden>
+      <h2 class="admin-section-title" data-i18n="myAccount">حسابي</h2>
+      <form id="profileForm" class="admin-panel product-form-grid">
+        <div class="field-row">
+          <label data-i18n="emailLabel">البريد الإلكتروني</label>
+          <input type="email" id="profileEmail" disabled>
+        </div>
+        <div class="field-row">
+          <label data-i18n="fullNameLabel">الاسم الكامل</label>
+          <input type="text" id="profileName">
+        </div>
+        <div class="field-row">
+          <label data-i18n="phoneLabel">رقم الهاتف</label>
+          <input type="text" id="profilePhone">
+        </div>
+        <div class="field-row">
+          <label data-i18n="addressLabel">العنوان</label>
+          <input type="text" id="profileAddress">
+        </div>
+        <div id="profileSavedMsg" class="form-success" hidden></div>
+        <div class="cta-row">
+          <button type="submit" class="btn btn-primary" id="profileSaveBtn" data-i18n="saveChanges">حفظ</button>
+        </div>
+      </form>
+
+      <h2 class="admin-section-title" data-i18n="myFavorites">المفضلة</h2>
+      <div id="favoritesList" class="admin-product-list"></div>
+
+      <h2 class="admin-section-title" data-i18n="myOrders">طلباتي</h2>
+      <div id="ordersList" class="admin-product-list"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div data-i18n="footerNote">لمياء غودز — صُنع بحب 🍯</div>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/auth.js"></script>
+<script type="module" src="js/account.js"></script>
+</body>
+</html>

@@ -34,6 +34,7 @@ header{
   position:sticky;top:0;z-index:20;
 }
 header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.header-right{display:flex;align-items:center;gap:10px;}
 .brand{display:flex;align-items:center;gap:10px;}
 .brand-mark{
   width:38px;height:38px;border-radius:50%;
@@ -112,11 +113,21 @@ main{background:var(--card);padding-bottom:40px;}
   overflow:hidden;
   display:flex;flex-direction:column;
 }
+.product-img-wrap{position:relative;}
 .product img{
   width:100%;aspect-ratio:1/1;object-fit:cover;
   background:var(--gold-fill);
   display:block;
 }
+.favorite-btn{
+  position:absolute;top:10px;inset-inline-end:10px;
+  width:34px;height:34px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.85);color:var(--burgundy);
+  font-size:18px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.favorite-btn.active{color:var(--burgundy);background:#fff;}
+.favorite-btn:hover{background:#fff;}
 .product-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1;}
 .product-cat{font-size:11.5px;color:var(--amber-dark);font-weight:700;letter-spacing:.3px;}
 .product-name{font-family:inherit;font-weight:700;font-size:16.5px;color:var(--ink);}
@@ -144,6 +155,48 @@ footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
 @media (max-width:480px){
   .brand-name{font-size:16px;}
   .hero{padding:34px 0 24px;}
+}
+
+/* auth: header avatar + dropdown */
+.auth-signin-btn{
+  padding:8px 16px;font-size:13px;
+  border-color:var(--cream);color:var(--cream);
+}
+.auth-signin-btn:hover{background:rgba(255,255,255,.1);}
+.auth-user{position:relative;}
+.avatar-btn{
+  width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;
+  background:radial-gradient(circle at 35% 30%, var(--amber), var(--amber-dark));
+  color:var(--cream);font-weight:800;font-size:14px;font-family:'Cairo',sans-serif;
+}
+.auth-dropdown{
+  position:absolute;top:calc(100% + 8px);inset-inline-end:0;z-index:30;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.15);padding:8px;min-width:160px;
+  display:flex;flex-direction:column;gap:2px;
+}
+.auth-dropdown a,.auth-dropdown button{
+  display:block;text-align:start;width:100%;
+  padding:9px 12px;border-radius:8px;border:none;background:transparent;
+  color:var(--ink);font-size:13.5px;font-weight:600;text-decoration:none;
+  cursor:pointer;font-family:inherit;
+}
+.auth-dropdown a:hover,.auth-dropdown button:hover{background:var(--cream);}
+
+/* auth modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(43,32,24,.55);
+  display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;
+}
+.modal-overlay[hidden]{display:none;}
+.modal{
+  background:var(--card);border-radius:18px;padding:28px 24px;
+  width:100%;max-width:360px;position:relative;
+}
+.modal-close{
+  position:absolute;top:14px;inset-inline-end:14px;
+  background:transparent;border:none;font-size:22px;line-height:1;
+  color:#8a7a66;cursor:pointer;
 }
 
 /* admin panel */
@@ -177,6 +230,10 @@ footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
   background:#FBE4E4;color:#8A2A2A;border-radius:10px;
   padding:10px 12px;font-size:13.5px;margin-bottom:14px;
 }
+.form-success{
+  background:#DCEFDD;color:#2E7D32;border-radius:10px;
+  padding:10px 12px;font-size:13.5px;margin-bottom:14px;
+}
 .toggle-auth-link{
   display:block;margin-top:14px;font-size:13px;font-weight:600;
   color:var(--burgundy);text-decoration:none;
@@ -195,3 +252,8 @@ footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
 }
 .admin-product-row-info{display:flex;flex-direction:column;gap:3px;flex:1;}
 .admin-product-row-info span{font-size:12.5px;color:#7A6A57;}
+.admin-section-title{font-size:18px;color:var(--ink);margin:30px 0 14px;}
+.status-badge{font-weight:700;padding:2px 8px;border-radius:20px;font-size:11px;}
+.status-pending{background:var(--gold-fill);color:var(--amber-dark);}
+.status-fulfilled{background:#DCEFDD;color:#2E7D32;}
+.status-cancelled{background:#FBE4E4;color:#8A2A2A;}

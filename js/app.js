@@ -16,6 +16,18 @@ window.setLiveProducts = function (liveProducts) {
   renderProducts();
 };
 
+// Walks [data-i18n] elements under root and sets their text from the current
+// language. Exposed globally so runtime-injected UI (the auth modal built by
+// js/auth.js, an ES module loaded after this classic script) can reuse the
+// same translation mechanism instead of inventing a second one.
+window.translateDom = function (root) {
+  const t = I18N[currentLang];
+  (root || document).querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (t[key]) el.textContent = t[key];
+  });
+};
+
 function applyLang(lang) {
   currentLang = lang;
   const t = I18N[lang];
@@ -23,10 +35,7 @@ function applyLang(lang) {
   document.documentElement.setAttribute("lang", lang);
   document.documentElement.setAttribute("dir", t.dir);
 
-  document.querySelectorAll("[data-i18n]").forEach((el) => {
-    const key = el.getAttribute("data-i18n");
-    if (t[key]) el.textContent = t[key];
-  });
+  window.translateDom(document);
 
   document.getElementById("mainWhatsapp").href = waLink(t.waMsg(t.brandName));
 
@@ -36,6 +45,7 @@ function applyLang(lang) {
 
   renderCategories();
   renderProducts();
+  document.dispatchEvent(new CustomEvent("langchange", { detail: lang }));
 }
 
 function renderCategories() {
@@ -65,8 +75,12 @@ function renderProducts() {
     const card = document.createElement("div");
     card.className = "product";
     const imgSrc = p.photoUrl || (p.photoId ? photoUrl(p.photoId) : "");
+    const isFav = window.LamiaFirebase?.favoritesSet?.has(p.id);
     card.innerHTML = `
-      <img src="${imgSrc}" alt="${p.name[currentLang]}" loading="lazy">
+      <div class="product-img-wrap">
+        <img src="${imgSrc}" alt="${p.name[currentLang]}" loading="lazy">
+        <button class="favorite-btn${isFav ? " active" : ""}" aria-label="favorite">${isFav ? "♥" : "♡"}</button>
+      </div>
       <div class="product-body">
         <div class="product-cat">${t.categories[p.category] || p.category}</div>
         <div class="product-name">${p.name[currentLang]}</div>
@@ -79,6 +93,10 @@ function renderProducts() {
     `;
     card.querySelector(".order-btn").addEventListener("click", () => {
       window.open(waLink(t.waMsg(p.name[currentLang])), "_blank");
+      window.LamiaFirebase?.recordOrder?.(p, currentLang)?.catch(() => {});
+    });
+    card.querySelector(".favorite-btn").addEventListener("click", () => {
+      window.LamiaFirebase?.toggleFavorite?.(p.id);
     });
     grid.appendChild(card);
   });

@@ -74,6 +74,26 @@ one place.
 Full plan (architecture, file list, rules, phasing) is preserved at
 `C:\Users\youse\.claude\plans\replicated-mixing-sun.md` on this machine.
 
+**Live Firebase project:** `lamias-goodies` (created 2026-07-18 by the user
+in Firebase Console). Real `firebaseConfig` values are committed in
+`js/firebase-config.js` (safe — not secrets). Auth providers, Firestore, and
+Storage were set up by the user following the checklist below.
+
+**Admin login has two paths** (both on `admin.html`): Google sign-in (auto-
+creates the Firebase Auth account on first use — no separate "sign up"
+needed), or email/password with an explicit Sign In / Sign Up toggle (added
+2026-07-18 since Google sign-in initially failed — see gotcha below). Either
+way, "admin" access is just whichever account's email matches
+`yousef3talla@gmail.com`; anyone can create an unrelated email/password
+account through the same form, it simply won't pass the admin email check
+in `firestore.rules`/`storage.rules` or in the UI gate in `js/admin.js`.
+
+**Gotcha hit during setup:** Google sign-in failed on the live GitHub Pages
+site until the deployed domain (`yousefat123.github.io`) was added to
+Firebase Console → Authentication → Settings → Authorized domains
+(`localhost` alone, added during initial setup, isn't enough — every real
+domain the site is served from needs to be added explicitly).
+
 ## Known data issues from the old hardcoded catalog (relevant to the Firestore import, not a live sheet anymore)
 
 1. **Duplicate ids/photos:** `MAA-001`/`002`/`003` (date, walnut, pistachio
@@ -93,31 +113,43 @@ and `window.setLiveProducts()` (see Firebase section above).
 
 ```
 lamias-goodies-website/
-  index.html
-  admin.html             admin panel: product CRUD, photo upload, one-time
-                          "Import legacy products" migration button
+  index.html              storefront: catalog + WhatsApp ordering + header
+                          sign-in/account UI (#authArea)
+  account.html            customer's own page: profile, favorites, order
+                          history (gated: shows a sign-in prompt if logged out)
+  admin.html              admin panel: product CRUD + photo upload, one-time
+                          "Import legacy products" button, order management
   css/styles.css
   js/
-    config.js             WhatsApp number + adminEmail
-    i18n.js                all UI strings + category labels, per language
-    products-data.js       fallback catalog (used if Firestore is
+    config.js              WhatsApp number + adminEmail
+    i18n.js                 all UI strings + category labels, per language
+    products-data.js        fallback catalog (used if Firestore is
                           unreachable/unconfigured) + migration source
-    firebase-config.js     Firebase CDN imports, project config (fill in
-                          real values here once the Firebase project
-                          exists), fetches live products -> setLiveProducts()
-    admin.js                admin.html logic: auth-gated product CRUD
-    app.js                  rendering, language switching, WhatsApp link
-                          building, exposes window.setLiveProducts()
-  firestore.rules          paste into Firebase Console -> Firestore -> Rules
-  storage.rules            paste into Firebase Console -> Storage -> Rules
-  assets/icons/            empty, placeholder for future PWA icons
+    firebase-config.js      Firebase CDN imports + real project config,
+                          fetches live products -> window.setLiveProducts()
+    auth.js                  sign-in/up modal (email+password and Google),
+                          header avatar/dropdown, creates users/{uid} on
+                          first login, defines window.LamiaFirebase (the
+                          bridge app.js/account.js call into)
+    account.js               account.html logic: profile form, favorites
+                          list (with remove), order history list
+    admin.js                 admin.html logic: auth-gated product CRUD,
+                          photo upload, legacy-import button, order list
+                          with mark-fulfilled/cancel controls
+    app.js                   rendering, language switching, WhatsApp link
+                          building, favorite-heart + order-recording hooks,
+                          exposes window.setLiveProducts()/translateDom()
+  firestore.rules           paste into Firebase Console -> Firestore -> Rules
+  storage.rules             paste into Firebase Console -> Storage -> Rules
+  assets/icons/             empty, placeholder for future PWA icons
   README.md
   .gitignore
 ```
 
-Not yet built (see Next Steps): `js/auth.js` (customer sign-in/up modal),
-`account.html`/`js/account.js` (profile, favorites, order history),
-favorites/order-recording wiring in `app.js`.
+All 6 plan phases are built (Phase 1 through Phase 6 — see Next Steps).
+`app.js` remains a classic script; every Firebase-touching call in it goes
+through `window.LamiaFirebase?.foo?.()` so a Firebase outage/misconfig can
+never break guest browsing or WhatsApp ordering.
 
 **Design tokens used:** cream background (#FAF3E6), amber (#C17F2B) +
 burgundy (#7C2C3B) accents, ink text (#2B2018). Fonts: Cairo (Arabic
@@ -141,38 +173,47 @@ applies now that the site is deployed via GitHub Pages, not opened locally.)
 
 ## Next steps, in priority order
 
-Implementing the Firebase accounts + admin panel feature (see plan at
-`C:\Users\youse\.claude\plans\replicated-mixing-sun.md`), phase by phase:
+The Firebase accounts + admin panel feature (plan at
+`C:\Users\youse\.claude\plans\replicated-mixing-sun.md`) is **fully built**,
+all 6 phases, as of 2026-07-18:
 
-1. ✅ **Phase 1 — Firebase wiring + product migration** (done 2026-07-18):
-   `js/firebase-config.js`, `admin.html`/`js/admin.js` (product CRUD, photo
-   upload, legacy-import button), `firestore.rules`/`storage.rules` written.
-   Verified locally: guest browsing/ordering still works unaffected when
-   Firebase is unconfigured; `admin.html` correctly shows a disabled
-   login state. **Blocked on the user**: create the Firebase project and
-   send back the real `firebaseConfig` values (see checklist in the plan
-   file) so `js/firebase-config.js` can be filled in and this phase can be
-   tested end-to-end (Firestore reads/writes, Storage upload, import button).
-2. **Phase 2 — Auth** (`js/auth.js`, header sign-in modal, `users/{uid}`
-   creation on first login) — not started, purely additive once built.
-3. **Phase 3 — Order recording** (`orders` collection + admin order list) —
-   not started.
-4. **Phase 4 — Favorites** (heart button + `users/{uid}/favorites`) — not
-   started.
-5. **Phase 5 — Account page** (`account.html`/`js/account.js`: profile,
-   favorites, order history) — not started.
-6. **Phase 6 — Polish & docs** (product edit/delete refinement, order status
-   workflow, remove residual Drive dependency) — not started.
+1. ✅ **Phase 1 — Firebase wiring + product migration.** `js/firebase-config.js`
+   (real project config wired in), `admin.html`/`js/admin.js` (product CRUD,
+   photo upload, legacy-import button), `firestore.rules`/`storage.rules`.
+2. ✅ **Phase 2 — Auth.** `js/auth.js`: modal (email/password with sign-in/up
+   toggle, plus Google), header avatar + dropdown, `users/{uid}` creation on
+   first login.
+3. ✅ **Phase 3 — Order recording.** Every order-button click writes an
+   `orders` doc (guest or logged-in); admin panel lists all orders with
+   mark-fulfilled/cancel controls.
+4. ✅ **Phase 4 — Favorites.** Heart button on product cards, synced to
+   `users/{uid}/favorites` live via `onSnapshot`.
+5. ✅ **Phase 5 — Account page.** `account.html`/`js/account.js`: profile
+   form (name/phone/address), favorites list (with remove), order history.
+6. ✅ **Phase 6 — Polish & docs.** This doc rewritten; product edit/delete
+   and order status controls exist in the admin panel already built in
+   earlier phases.
 
-Deferred until the above is done and soft-launched:
+**Not done, and can't be automated:** actually re-uploading a real photo for
+each product via `admin.html`'s Upload Photo field (or bulk via the DB) —
+until that happens, imported products still show the old Drive-hotlink
+photo as an interim value. Do this once real product photos exist.
+
+**Verification still needed from the user** (requires real login, which
+Claude cannot do on the user's behalf): sign up/in as
+`yousef3talla@gmail.com` on the live site, confirm the admin panel loads,
+run "Import legacy products" once, upload a real photo for one product,
+place a test order (logged in and as guest) and confirm both show up in
+the admin order list, toggle a favorite and confirm it shows on
+`account.html`.
+
+Deferred until the above is verified and soft-launched:
 - **Make it installable** — `manifest.json` + real icons in `assets/icons/`.
 - **Cart + real payment** only once real order volume justifies it — use an
   Israeli processor (Tranzila/Cardcom), not Stripe/Square.
 
-**Still outstanding, not yet confirmed done:** enabling GitHub Pages
-(Settings -> Pages -> Deploy from branch `main` -> Save) — walked the user
-through the steps but never got confirmation it was actually turned on.
-Verify before assuming the site is publicly live.
+GitHub Pages was confirmed live and working during this session (the
+`yousefat123.github.io/-lamias-goodies-website/` URL was tested directly).
 
 ## Broader context explored earlier (not part of this site, background only)
 
