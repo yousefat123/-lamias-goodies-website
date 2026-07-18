@@ -36,6 +36,18 @@ document.body.insertAdjacentHTML("beforeend", `
     <a href="#" class="toggle-auth-link" id="authToggleModeLink" data-i18n="toggleToSignUp"></a>
   </div>
 </div>
+<div class="modal-overlay" id="cartModalOverlay" hidden>
+  <div class="modal cart-modal">
+    <button class="modal-close" id="cartModalClose" aria-label="close">&times;</button>
+    <h3 data-i18n="cart"></h3>
+    <div id="cartItemsList"></div>
+    <div class="cart-total-row">
+      <span data-i18n="total"></span>
+      <strong id="cartTotalAmount"></strong>
+    </div>
+    <button class="btn btn-primary cart-checkout-btn" id="cartCheckoutBtn" data-i18n="checkoutWhatsapp"></button>
+  </div>
+</div>
 `);
 
 const overlay = document.getElementById("authModalOverlay");
@@ -110,6 +122,28 @@ if (isConfigured) {
 document.addEventListener("langchange", () => {
   applyModalMode();
   renderAuthArea(auth?.currentUser || null);
+  renderCartButton();
+  renderCartItems();
+});
+
+// ---- Cart modal ----
+
+const cartOverlay = document.getElementById("cartModalOverlay");
+const cartItemsList = document.getElementById("cartItemsList");
+
+function openCartModal() {
+  renderCartItems();
+  cartOverlay.hidden = false;
+}
+function closeCartModal() {
+  cartOverlay.hidden = true;
+}
+document.getElementById("cartModalClose").addEventListener("click", closeCartModal);
+cartOverlay.addEventListener("click", (e) => {
+  if (e.target === cartOverlay) closeCartModal();
+});
+document.getElementById("cartCheckoutBtn").addEventListener("click", () => {
+  checkoutCart();
 });
 
 // ---- Header auth area ----
@@ -153,10 +187,69 @@ function renderAuthArea(user) {
   wrap.querySelector("#authSignOutBtn").addEventListener("click", () => fbSignOut(auth));
 }
 
-// ---- Firestore-backed user doc + favorites sync ----
+// ---- Header cart button ----
+
+const cartArea = document.getElementById("cartArea");
+
+function renderCartButton() {
+  if (!cartArea) return;
+  const count = [...cartMap.values()].reduce((sum, qty) => sum + qty, 0);
+  cartArea.innerHTML = `
+    <button class="cart-btn" id="cartOpenBtn" aria-label="cart">
+      🛒${count > 0 ? `<span class="cart-badge">${count}</span>` : ""}
+    </button>
+  `;
+  cartArea.querySelector("#cartOpenBtn").addEventListener("click", () => {
+    if (!auth?.currentUser) { openModal(); return; }
+    openCartModal();
+  });
+}
+
+function renderCartItems() {
+  if (!cartItemsList) return;
+  const t18 = t();
+  const entries = [...cartMap.entries()];
+  if (entries.length === 0) {
+    cartItemsList.innerHTML = `<p class="cart-empty">${t18.cartEmpty}</p>`;
+    document.getElementById("cartTotalAmount").textContent = "₪0";
+    return;
+  }
+  let total = 0;
+  cartItemsList.innerHTML = "";
+  entries.forEach(([productId, qty]) => {
+    const p = window.getProduct?.(productId);
+    if (!p) return;
+    const lineTotal = p.price * qty;
+    total += lineTotal;
+    const row = document.createElement("div");
+    row.className = "cart-item-row";
+    row.innerHTML = `
+      <img src="${p.photoUrl || ""}" alt="">
+      <div class="cart-item-info">
+        <strong>${p.name[lang()]}</strong>
+        <span>₪${p.price} × ${qty} = ₪${lineTotal}</span>
+      </div>
+      <div class="cart-qty-controls">
+        <button data-dec>−</button>
+        <span>${qty}</span>
+        <button data-inc>+</button>
+      </div>
+      <button class="cart-remove-btn" data-remove>&times;</button>
+    `;
+    row.querySelector("[data-inc]").addEventListener("click", () => updateCartQty(productId, qty + 1));
+    row.querySelector("[data-dec]").addEventListener("click", () => updateCartQty(productId, qty - 1));
+    row.querySelector("[data-remove]").addEventListener("click", () => updateCartQty(productId, 0));
+    cartItemsList.appendChild(row);
+  });
+  document.getElementById("cartTotalAmount").textContent = `₪${total}`;
+}
+
+// ---- Firestore-backed user doc + favorites + cart sync ----
 
 let favoritesSet = new Set();
 let favoritesUnsub = null;
+let cartMap = new Map();
+let cartUnsub = null;
 
 async function ensureUserDoc(user) {
   const ref = doc(db, "users", user.uid);
@@ -181,21 +274,89 @@ function syncFavorites(uid) {
   });
 }
 
+function syncCart(uid) {
+  cartUnsub?.();
+  cartUnsub = onSnapshot(collection(db, "users", uid, "cart"), (snap) => {
+    cartMap = new Map(snap.docs.map((d) => [d.id, d.data().quantity || 1]));
+    renderCartButton();
+    renderCartItems();
+  });
+}
+
 if (isConfigured) {
   onAuthStateChanged(auth, async (user) => {
     renderAuthArea(user);
+    renderCartButton();
     if (user) {
       await ensureUserDoc(user);
       syncFavorites(user.uid);
+      syncCart(user.uid);
     } else {
       favoritesUnsub?.();
       favoritesUnsub = null;
       favoritesSet = new Set();
+      cartUnsub?.();
+      cartUnsub = null;
+      cartMap = new Map();
       window.renderProducts?.();
+      renderCartButton();
     }
   });
 } else {
   renderAuthArea(null);
+  renderCartButton();
+}
+
+// ---- Cart mutations ----
+
+async function updateCartQty(productId, qty) {
+  const user = auth?.currentUser;
+  if (!user) { openModal(); return; }
+  const ref = doc(db, "users", user.uid, "cart", productId);
+  if (qty <= 0) {
+    await deleteDoc(ref);
+  } else {
+    await setDoc(ref, { productId, quantity: qty, addedAt: serverTimestamp() }, { merge: true });
+  }
+}
+
+async function checkoutCart() {
+  const user = auth?.currentUser;
+  if (!user || cartMap.size === 0) return;
+  const t18 = t();
+  const entries = [...cartMap.entries()];
+  let total = 0;
+  const lines = entries
+    .map(([productId, qty]) => {
+      const p = window.getProduct?.(productId);
+      if (!p) return null;
+      total += p.price * qty;
+      return `- ${p.name[lang()]} x${qty} (₪${p.price * qty})`;
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  window.open(
+    `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(t18.cartWaMsg(lines, total))}`,
+    "_blank"
+  );
+
+  for (const [productId, qty] of entries) {
+    const p = window.getProduct?.(productId);
+    if (!p) continue;
+    await addDoc(collection(db, "orders"), {
+      userId: user.uid,
+      productId,
+      productName: p.name[lang()],
+      price: p.price * qty,
+      lang: lang(),
+      status: "pending",
+      createdAt: serverTimestamp(),
+      source: "whatsapp-cart"
+    });
+    await deleteDoc(doc(db, "users", user.uid, "cart", productId));
+  }
+  closeCartModal();
 }
 
 // ---- Bridge for app.js (classic script) ----
@@ -213,6 +374,11 @@ window.LamiaFirebase = {
     } else {
       await setDoc(ref, { productId, addedAt: serverTimestamp() });
     }
+  },
+  addToCart: async (productId) => {
+    const user = auth?.currentUser;
+    if (!user) { openModal(); return; }
+    await updateCartQty(productId, (cartMap.get(productId) || 0) + 1);
   },
   recordOrder: async (product, orderLang) => {
     if (!isConfigured) return;

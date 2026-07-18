@@ -57,7 +57,14 @@ const I18N = {
     markFulfilled: "تم التنفيذ",
     markCancelled: "إلغاء الطلب",
     orderStatus: { pending: "قيد الانتظار", fulfilled: "تم التنفيذ", cancelled: "ملغى" },
-    signInRequired: "الرجاء تسجيل الدخول أولاً"
+    signInRequired: "الرجاء تسجيل الدخول أولاً",
+    cart: "السلة",
+    addToCart: "أضف إلى السلة",
+    cartEmpty: "السلة فارغة",
+    checkoutWhatsapp: "إتمام الطلب عبر واتساب",
+    total: "الإجمالي",
+    remove: "إزالة",
+    cartWaMsg: (lines, total) => `مرحبًا، أرغب بطلب التالي:\n${lines}\n\nالإجمالي: ₪${total}`
   },
   he: {
     dir: "rtl",
@@ -115,7 +122,14 @@ const I18N = {
     markFulfilled: "בוצע",
     markCancelled: "ביטול הזמנה",
     orderStatus: { pending: "ממתין", fulfilled: "בוצע", cancelled: "בוטל" },
-    signInRequired: "יש להתחבר קודם"
+    signInRequired: "יש להתחבר קודם",
+    cart: "עגלה",
+    addToCart: "הוספה לעגלה",
+    cartEmpty: "העגלה ריקה",
+    checkoutWhatsapp: "השלמת הזמנה בוואטסאפ",
+    total: "סה\"כ",
+    remove: "הסרה",
+    cartWaMsg: (lines, total) => `שלום, אני רוצה להזמין:\n${lines}\n\nסה"כ: ₪${total}`
   },
   en: {
     dir: "ltr",
@@ -173,6 +187,13 @@ const I18N = {
     markFulfilled: "Fulfilled",
     markCancelled: "Cancel Order",
     orderStatus: { pending: "Pending", fulfilled: "Fulfilled", cancelled: "Cancelled" },
-    signInRequired: "Please sign in first"
+    signInRequired: "Please sign in first",
+    cart: "Cart",
+    addToCart: "Add to Cart",
+    cartEmpty: "Your cart is empty",
+    checkoutWhatsapp: "Checkout via WhatsApp",
+    total: "Total",
+    remove: "Remove",
+    cartWaMsg: (lines, total) => `Hi, I'd like to order:\n${lines}\n\nTotal: ₪${total}`
   }
 };

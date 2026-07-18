@@ -67,9 +67,24 @@ one place.
   `photoUrl` (Storage URL), `available`, `createdAt`, `updatedAt`.
 - `users/{uid}` — `email`, `displayName`, `phone`, `address`, timestamps.
 - `users/{uid}/favorites/{productId}` — doc id = productId (idempotent toggle).
-- `orders/{id}` — one doc per order-button click: `userId` (uid or `null`
-  for guest), `productId`, `productName`, `price`, `lang`, `status`
-  (`pending|fulfilled|cancelled`), `createdAt`, `source: "whatsapp"`.
+- `users/{uid}/cart/{productId}` — doc id = productId, `{ productId, quantity,
+  addedAt }`. **Cart requires login** (explicit user decision, 2026-07-18,
+  same as favorites) — clicking the cart icon or a product's cart button
+  while signed out opens the sign-in modal instead of adding anything.
+- `orders/{id}` — one doc per order (single-item WhatsApp order, or one doc
+  per line item on cart checkout): `userId` (uid or `null` for guest),
+  `productId`, `productName`, `price`, `lang`, `status`
+  (`pending|fulfilled|cancelled`), `createdAt`, `source` (`"whatsapp"` or
+  `"whatsapp-cart"`).
+
+**Cart flow:** heart-style add-to-cart button (🛒) on every product card plus
+a header cart icon with an item-count badge. Opening the cart shows a panel
+with quantity steppers and a remove button per line, a running total, and a
+"Checkout via WhatsApp" button that builds **one combined message** listing
+every line item + total, opens WhatsApp, records one `orders` doc per line
+item (`source: "whatsapp-cart"`), then clears the cart. This is additive —
+the original single-item "Order" button (guest-friendly, no login, no cart)
+is untouched and still the primary/fastest path.
 
 Full plan (architecture, file list, rules, phasing) is preserved at
 `C:\Users\youse\.claude\plans\replicated-mixing-sun.md` on this machine.
@@ -193,19 +208,32 @@ all 6 phases, as of 2026-07-18:
 6. ✅ **Phase 6 — Polish & docs.** This doc rewritten; product edit/delete
    and order status controls exist in the admin panel already built in
    earlier phases.
+7. ✅ **Cart** (added 2026-07-18, user request after the phased plan was
+   done): add-to-cart button per product, header cart icon + badge, cart
+   panel with quantity controls, combined-message WhatsApp checkout,
+   `users/{uid}/cart`. Login-gated like favorites, by explicit request.
 
 **Not done, and can't be automated:** actually re-uploading a real photo for
 each product via `admin.html`'s Upload Photo field (or bulk via the DB) —
 until that happens, imported products still show the old Drive-hotlink
 photo as an interim value. Do this once real product photos exist.
 
+**Action needed from the user:** `firestore.rules` was updated (added a
+`cart` subcollection rule) after it was last pasted into the Firebase
+Console — **re-paste the current contents of `firestore.rules` into
+Firestore → Rules → Publish**, or cart reads/writes will fail against the
+still-deployed older rules.
+
 **Verification still needed from the user** (requires real login, which
 Claude cannot do on the user's behalf): sign up/in as
-`yousef3talla@gmail.com` on the live site, confirm the admin panel loads,
-run "Import legacy products" once, upload a real photo for one product,
-place a test order (logged in and as guest) and confirm both show up in
-the admin order list, toggle a favorite and confirm it shows on
-`account.html`.
+`yousef3talla@gmail.com` on the live site (see the Google-sign-in-domain and
+email/password-vs-Google gotchas above if "not authorized" shows up
+unexpectedly), confirm the admin panel loads, run "Import legacy products"
+once, upload a real photo for one product, place a test order (logged in
+and as guest) and confirm both show up in the admin order list, toggle a
+favorite and confirm it shows on `account.html`, add items to the cart and
+confirm the combined WhatsApp checkout message and per-line order records
+look right.
 
 Deferred until the above is verified and soft-launched:
 - **Make it installable** — `manifest.json` + real icons in `assets/icons/`.

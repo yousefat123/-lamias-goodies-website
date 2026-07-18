@@ -16,6 +16,13 @@ window.setLiveProducts = function (liveProducts) {
   renderProducts();
 };
 
+// Lets js/auth.js (which doesn't have direct access to the products array,
+// a plain top-level binding private to this classic script) resolve a
+// product's name/price/photo when rendering the cart.
+window.getProduct = function (id) {
+  return products.find((p) => p.id === id);
+};
+
 // Walks [data-i18n] elements under root and sets their text from the current
 // language. Exposed globally so runtime-injected UI (the auth modal built by
 // js/auth.js, an ES module loaded after this classic script) can reuse the
@@ -87,7 +94,10 @@ function renderProducts() {
         <div class="product-desc">${p.desc[currentLang]}</div>
         <div class="product-foot">
           <span class="price">₪${p.price}</span>
-          <button class="order-btn" data-name="${p.name[currentLang]}">${t.order}</button>
+          <div class="product-actions">
+            <button class="add-cart-btn" aria-label="${t.addToCart}" title="${t.addToCart}">🛒</button>
+            <button class="order-btn" data-name="${p.name[currentLang]}">${t.order}</button>
+          </div>
         </div>
       </div>
     `;
@@ -97,6 +107,9 @@ function renderProducts() {
     });
     card.querySelector(".favorite-btn").addEventListener("click", () => {
       window.LamiaFirebase?.toggleFavorite?.(p.id);
+    });
+    card.querySelector(".add-cart-btn").addEventListener("click", () => {
+      window.LamiaFirebase?.addToCart?.(p.id);
     });
     grid.appendChild(card);
   });
