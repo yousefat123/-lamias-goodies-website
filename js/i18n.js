@@ -41,7 +41,9 @@ const I18N = {
     cancel: "إلغاء",
     confirmDelete: "هل أنت متأكد من حذف هذا المنتج؟",
     authErrorGeneric: "حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.",
-    loading: "جارٍ التحميل..."
+    loading: "جارٍ التحميل...",
+    toggleToSignUp: "ليس لديك حساب؟ إنشاء حساب",
+    toggleToSignIn: "لديك حساب بالفعل؟ تسجيل الدخول"
   },
   he: {
     dir: "rtl",
@@ -83,7 +85,9 @@ const I18N = {
     cancel: "ביטול",
     confirmDelete: "למחוק את המוצר הזה?",
     authErrorGeneric: "אירעה שגיאה בהתחברות. נסו שוב.",
-    loading: "טוען..."
+    loading: "טוען...",
+    toggleToSignUp: "אין לך חשבון? הרשמה",
+    toggleToSignIn: "יש לך כבר חשבון? התחברות"
   },
   en: {
     dir: "ltr",
@@ -125,6 +129,8 @@ const I18N = {
     cancel: "Cancel",
     confirmDelete: "Delete this product?",
     authErrorGeneric: "Something went wrong signing in. Please try again.",
-    loading: "Loading..."
+    loading: "Loading...",
+    toggleToSignUp: "Don't have an account? Sign Up",
+    toggleToSignIn: "Already have an account? Sign In"
   }
 };

@@ -177,6 +177,11 @@ footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
   background:#FBE4E4;color:#8A2A2A;border-radius:10px;
   padding:10px 12px;font-size:13.5px;margin-bottom:14px;
 }
+.toggle-auth-link{
+  display:block;margin-top:14px;font-size:13px;font-weight:600;
+  color:var(--burgundy);text-decoration:none;
+}
+.toggle-auth-link:hover{text-decoration:underline;}
 .product-form-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(240px,1fr));gap:0 18px;}
 .product-form-grid .form-error,
 .product-form-grid .cta-row{grid-column:1/-1;}
