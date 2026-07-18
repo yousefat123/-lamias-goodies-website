@@ -104,15 +104,31 @@ to hard-refresh and clarify whether they were signed in when testing
 own earlier request — that's not a bug). Follow up if they report a real
 reproduction after a hard refresh + being signed in.
 
-**Phone sign-in** (added 2026-07-18): `login.html` also offers phone-number
-sign-in via Firebase's SMS `signInWithPhoneNumber`, gated by an invisible
-reCAPTCHA. Every number is assumed Israeli — no country picker, the UI just
-takes the local number and `js/login.js`'s `toE164()` normalizes it to
-`+972<digits>` (strips a leading 0), matching the same convention
-`CONFIG.whatsappNumber` already uses elsewhere. Revisit if the business
-ever needs non-Israeli customers. Untested against a real SMS send (would
-consume live Firebase quota) — logic verified directly instead; flag to
-the user if phone sign-in doesn't work in practice.
+**Phone sign-in — phone number + password, NOT SMS-verified** (added
+2026-07-18, replacing an earlier SMS-based version built the same day).
+User explicitly chose this after being told the trade-off: there is no
+proof anyone actually owns the phone number they type in, it's really just
+a username. Firebase Auth has no native "phone + password" account type,
+so this is a regular email/password account under the hood, keyed by a
+synthetic, never-shown "email" (`js/firebase-config.js`'s
+`phoneToSyntheticEmail()`: `<digits>@phone.lamias-goodies.local`). Every
+number is assumed Israeli — no country picker, `js/login.js`'s `toE164()`
+normalizes local input to `+972<digits>`, matching `CONFIG.whatsappNumber`'s
+convention elsewhere. `auth.js`/`account.js` recognize the synthetic domain
+so the real phone number (not the fake email) shows on `account.html`, and
+the "verify your email" banner never shows for these accounts. Verified
+end-to-end against the live Firebase project (a bad-credentials attempt
+correctly round-tripped to a real `auth/invalid-credential` response).
+
+**Debugging gotcha worth remembering:** while building this, local testing
+showed "nothing happens, no console error" when clicking things — turned
+out to be a stale browser-cached `js/firebase-config.js` missing new
+exports, which silently aborts the importing module's *entire* top-level
+execution (no visible error), so every event listener meant to be
+registered after that point never attaches. Fixed by force-reloading
+script URLs (`fetch(url, {cache:'reload'})`) before re-testing. If a future
+session hits "click does nothing, no error" again after editing a shared
+module, suspect this before assuming the logic is wrong.
 
 **Email verification** (added 2026-07-18): email/password sign-ups get a
 verification email via Firebase Auth's `sendEmailVerification`; a banner on
