@@ -14,12 +14,12 @@ import { getFirestore, collection, getDocs } from "https://www.gstatic.com/fireb
 import { getStorage } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey: null,
-  authDomain: null,
-  projectId: null,
-  storageBucket: null,
-  messagingSenderId: null,
-  appId: null
+  apiKey: "AIzaSyAbKzFXjL1cAprvbeAWw5uFwR3sB3aCe5Y",
+  authDomain: "lamias-goodies.firebaseapp.com",
+  projectId: "lamias-goodies",
+  storageBucket: "lamias-goodies.firebasestorage.app",
+  messagingSenderId: "579398769410",
+  appId: "1:579398769410:web:5d637c23abb3eb1423001b"
 };
 
 const isConfigured = Object.values(firebaseConfig).every((v) => v !== null);
