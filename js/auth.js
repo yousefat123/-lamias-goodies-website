@@ -1,4 +1,4 @@
-import { auth, db, isConfigured } from "./firebase-config.js";
+import { auth, db, isConfigured, isPhoneSyntheticEmail, syntheticEmailToPhone } from "./firebase-config.js";
 import {
   onAuthStateChanged, signOut as fbSignOut
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
@@ -173,10 +173,11 @@ async function ensureUserDoc(user) {
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
   if (!snap.exists()) {
+    const isPhone = isPhoneSyntheticEmail(user.email);
     await setDoc(ref, {
-      email: user.email,
+      email: isPhone ? null : user.email,
       displayName: user.displayName || "",
-      phone: null,
+      phone: isPhone ? syntheticEmailToPhone(user.email) : null,
       address: null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()

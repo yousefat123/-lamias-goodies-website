@@ -57,29 +57,23 @@
 
       <div class="auth-divider"><span data-i18n="orDivider">أو</span></div>
 
-      <div id="phoneSection">
+      <form id="phoneForm">
         <div class="field-row">
           <label data-i18n="phoneLabel">رقم الهاتف</label>
           <div class="phone-input-group">
             <span class="phone-prefix">+972</span>
-            <input type="tel" id="loginPhone" inputmode="numeric" placeholder="5X-XXXXXXX">
+            <input type="tel" id="loginPhone" inputmode="numeric" placeholder="5X-XXXXXXX" autocomplete="username" required>
           </div>
         </div>
-        <button type="button" class="btn btn-ghost auth-submit-btn" id="sendCodeBtn" data-i18n="sendCode">
-          إرسال الرمز
-        </button>
-
-        <div class="field-row" id="codeFieldRow" hidden>
-          <label data-i18n="verificationCodeLabel">رمز التحقق</label>
-          <input type="text" id="loginCode" inputmode="numeric" placeholder="123456">
+        <div class="field-row">
+          <label data-i18n="passwordLabel">كلمة المرور</label>
+          <input type="password" id="loginPhonePassword" autocomplete="current-password" required>
         </div>
-        <button type="button" class="btn btn-primary auth-submit-btn" id="verifyCodeBtn" data-i18n="verifyCode" hidden>
-          تحقق
-        </button>
-
         <div id="phoneError" class="form-error" hidden></div>
-      </div>
-      <div id="recaptcha-container"></div>
+        <button type="submit" class="btn btn-primary auth-submit-btn" id="phoneSubmitBtn" data-i18n="signIn">
+          تسجيل الدخول
+        </button>
+      </form>
     </div>
   </div>
 </main>

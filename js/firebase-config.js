@@ -60,4 +60,27 @@ async function loadLiveProducts() {
 
 loadLiveProducts();
 
-export { app, auth, db, storage, isConfigured };
+// Firebase Auth has no native "phone number + password" account type — only
+// SMS-verified phone auth or email/password. Per explicit user decision
+// (accepting that this means no proof the signer-up actually owns the
+// number — there's no OTP check), phone accounts are implemented as a
+// regular email/password account under the hood, using this synthetic,
+// never-shown, never-real "email" derived from the phone number. Every
+// caller (login.js for sign in/up, auth.js/account.js for reading the
+// profile back out) must use this exact helper so accounts round-trip
+// consistently.
+const PHONE_EMAIL_DOMAIN = "phone.lamias-goodies.local";
+function phoneToSyntheticEmail(e164Phone) {
+  return `${e164Phone.replace("+", "")}@${PHONE_EMAIL_DOMAIN}`;
+}
+function isPhoneSyntheticEmail(email) {
+  return !!email && email.endsWith(`@${PHONE_EMAIL_DOMAIN}`);
+}
+function syntheticEmailToPhone(email) {
+  return `+${email.split("@")[0]}`;
+}
+
+export {
+  app, auth, db, storage, isConfigured,
+  phoneToSyntheticEmail, isPhoneSyntheticEmail, syntheticEmailToPhone
+};

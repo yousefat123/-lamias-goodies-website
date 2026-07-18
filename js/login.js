@@ -1,9 +1,9 @@
-import { auth, isConfigured } from "./firebase-config.js";
+import { auth, db, isConfigured, phoneToSyntheticEmail } from "./firebase-config.js";
 import {
   onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, sendEmailVerification,
-  RecaptchaVerifier, signInWithPhoneNumber, sendPasswordResetEmail
+  signInWithPopup, GoogleAuthProvider, sendEmailVerification, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 // Every phone number on this site is Israeli for now — the UI only takes
 // the local part (e.g. "054-1234567" or "0541234567") and this fixed
@@ -57,15 +57,17 @@ window.translateDom(document);
 
 const titleEl = document.getElementById("authPageTitle");
 const submitBtn = document.getElementById("loginSubmitBtn");
+const phoneSubmitBtn = document.getElementById("phoneSubmitBtn");
 const toggleLink = document.getElementById("loginToggleModeLink");
 const errorEl = document.getElementById("loginError");
 const forgotPasswordLink = document.getElementById("forgotPasswordLink");
-let mode = "signin";
+let mode = "signin"; // shared by both the email form and the phone form below
 
 function applyMode() {
   const t = I18N[lang()];
   titleEl.textContent = mode === "signin" ? t.welcomeBack : t.createAccountTitle;
   submitBtn.textContent = mode === "signin" ? t.signIn : t.signUp;
+  phoneSubmitBtn.textContent = mode === "signin" ? t.signIn : t.signUp;
   toggleLink.textContent = mode === "signin" ? t.toggleToSignUp : t.toggleToSignIn;
   forgotPasswordLink.textContent = t.forgotPassword;
   forgotPasswordLink.hidden = mode !== "signin";
@@ -154,14 +156,14 @@ if (!isConfigured) {
     }
   });
 
-  // ---- Phone sign-in ----
+  // ---- Phone sign-in (phone number + password, no SMS verification) ----
+  // Explicit user decision: simpler than SMS, but means no proof anyone
+  // "owns" the phone number they type in — it's really just a username.
+  // Implemented as a regular Firebase email/password account under a
+  // synthetic email derived from the phone (see phoneToSyntheticEmail in
+  // firebase-config.js) so it reuses the same well-tested Auth code path.
 
   const phoneError = document.getElementById("phoneError");
-  const sendCodeBtn = document.getElementById("sendCodeBtn");
-  const verifyCodeBtn = document.getElementById("verifyCodeBtn");
-  const codeFieldRow = document.getElementById("codeFieldRow");
-  let confirmationResult = null;
-  let recaptchaVerifier = null;
 
   function showPhoneError(err) {
     const detail = err?.code || err?.message || "";
@@ -170,43 +172,39 @@ if (!isConfigured) {
     console.error(err);
   }
 
-  sendCodeBtn.addEventListener("click", async () => {
+  document.getElementById("phoneForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
     phoneError.hidden = true;
     const phone = toE164(document.getElementById("loginPhone").value);
+    const password = document.getElementById("loginPhonePassword").value;
     if (!phone) {
       phoneError.textContent = I18N[lang()].phoneInvalid;
       phoneError.hidden = false;
       return;
     }
-    sendCodeBtn.disabled = true;
+    suppressAutoRedirect = true;
+    const syntheticEmail = phoneToSyntheticEmail(phone);
     try {
-      recaptchaVerifier ??= new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" });
-      confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
-      codeFieldRow.hidden = false;
-      verifyCodeBtn.hidden = false;
-      phoneError.textContent = I18N[lang()].codeSent;
-      phoneError.className = "form-success";
-      phoneError.hidden = false;
-    } catch (err) {
-      showPhoneError(err);
-    } finally {
-      sendCodeBtn.disabled = false;
-    }
-  });
-
-  verifyCodeBtn.addEventListener("click", async () => {
-    if (!confirmationResult) return;
-    phoneError.hidden = true;
-    const code = document.getElementById("loginCode").value.trim();
-    verifyCodeBtn.disabled = true;
-    try {
-      await confirmationResult.confirm(code);
+      if (mode === "signup") {
+        const cred = await createUserWithEmailAndPassword(auth, syntheticEmail, password);
+        // Written directly (not left to auth.js's ensureUserDoc) so the
+        // real phone number — not the synthetic email — ends up in the
+        // profile shown on account.html.
+        await setDoc(doc(db, "users", cred.user.uid), {
+          email: null,
+          phone,
+          displayName: "",
+          address: null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } else {
+        await signInWithEmailAndPassword(auth, syntheticEmail, password);
+      }
       location.href = getNextUrl();
     } catch (err) {
-      phoneError.className = "form-error";
+      suppressAutoRedirect = false;
       showPhoneError(err);
-    } finally {
-      verifyCodeBtn.disabled = false;
     }
   });
 }

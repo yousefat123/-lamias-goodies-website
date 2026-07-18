@@ -1,4 +1,4 @@
-import { auth, db, isConfigured } from "./firebase-config.js";
+import { auth, db, isConfigured, isPhoneSyntheticEmail } from "./firebase-config.js";
 import { onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
   doc, getDoc, updateDoc, deleteDoc, collection, getDocs, query, where, orderBy
@@ -52,7 +52,9 @@ if (!isConfigured) {
     }
     signedOutBox.hidden = true;
     contentBox.hidden = false;
-    verifyBanner.hidden = user.emailVerified || user.providerData.every((p) => p.providerId !== "password");
+    verifyBanner.hidden = user.emailVerified
+      || isPhoneSyntheticEmail(user.email)
+      || user.providerData.every((p) => p.providerId !== "password");
     await loadProfile(user);
     await loadFavorites(user);
     await loadOrders(user);
@@ -77,7 +79,7 @@ const profileForm = document.getElementById("profileForm");
 const profileSavedMsg = document.getElementById("profileSavedMsg");
 
 async function loadProfile(user) {
-  document.getElementById("profileEmail").value = user.email || "";
+  document.getElementById("profileEmail").value = isPhoneSyntheticEmail(user.email) ? "" : (user.email || "");
   const snap = await getDoc(doc(db, "users", user.uid));
   const data = snap.exists() ? snap.data() : {};
   document.getElementById("profileName").value = data.displayName || "";
