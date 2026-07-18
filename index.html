@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lamia's Goodies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Almarai:wght@400;700&family=Rubik:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-lang="ar">
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-mark">LG</div>
+      <div class="brand-name" data-i18n="brandName">حلويات لمياء</div>
+    </div>
+    <div class="lang-switch">
+      <button data-setlang="ar" class="active">AR</button>
+      <button data-setlang="he">עב</button>
+      <button data-setlang="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1 class="display" data-i18n="heroTitle">حلويات ومعجنات منزلية بنكهة أصيلة</h1>
+    <p data-i18n="heroSub">كل قطعة تُصنع يدويًا بحب — كعك، معمول، وحلويات عربية تقليدية.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" id="mainWhatsapp" href="#" target="_blank" rel="noopener">
+        <span data-i18n="orderWhatsapp">اطلب عبر واتساب</span>
+      </a>
+      <a class="btn btn-ghost" href="tel:0547751481">
+        <span data-i18n="callUs">اتصلي بنا</span>
+      </a>
+    </div>
+  </div>
+</section>
+<div class="scallop"></div>
+
+<main>
+  <div class="wrap">
+    <div class="cats" id="catRow"></div>
+    <div class="grid" id="productGrid"></div>
+  </div>
+</main>
+
+<footer>
+  <div data-i18n="footerNote">لمياء غودز — صُنع بحب 🍯</div>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/products-data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
