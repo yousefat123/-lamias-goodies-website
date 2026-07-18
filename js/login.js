@@ -2,7 +2,7 @@ import { auth, isConfigured } from "./firebase-config.js";
 import {
   onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signInWithPopup, GoogleAuthProvider, sendEmailVerification,
-  RecaptchaVerifier, signInWithPhoneNumber
+  RecaptchaVerifier, signInWithPhoneNumber, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
 // Every phone number on this site is Israeli for now — the UI only takes
@@ -59,6 +59,7 @@ const titleEl = document.getElementById("authPageTitle");
 const submitBtn = document.getElementById("loginSubmitBtn");
 const toggleLink = document.getElementById("loginToggleModeLink");
 const errorEl = document.getElementById("loginError");
+const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 let mode = "signin";
 
 function applyMode() {
@@ -66,6 +67,8 @@ function applyMode() {
   titleEl.textContent = mode === "signin" ? t.welcomeBack : t.createAccountTitle;
   submitBtn.textContent = mode === "signin" ? t.signIn : t.signUp;
   toggleLink.textContent = mode === "signin" ? t.toggleToSignUp : t.toggleToSignIn;
+  forgotPasswordLink.textContent = t.forgotPassword;
+  forgotPasswordLink.hidden = mode !== "signin";
 }
 applyMode();
 
@@ -117,6 +120,26 @@ if (!isConfigured) {
       location.href = getNextUrl();
     } catch (err) {
       suppressAutoRedirect = false;
+      showError(err);
+    }
+  });
+
+  forgotPasswordLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    errorEl.hidden = true;
+    const email = document.getElementById("loginEmail").value.trim();
+    if (!email) {
+      errorEl.textContent = I18N[lang()].resetEmailRequired;
+      errorEl.hidden = false;
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      errorEl.className = "form-success";
+      errorEl.textContent = I18N[lang()].resetEmailSent;
+      errorEl.hidden = false;
+    } catch (err) {
+      errorEl.className = "form-error";
       showError(err);
     }
   });

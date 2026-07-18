@@ -227,6 +227,9 @@ footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
 .auth-page-card form{text-align:start;}
 .auth-submit-btn{width:100%;justify-content:center;margin-top:4px;}
 .auth-page-card .toggle-auth-link{text-align:center;}
+.forgot-password-link{
+  display:block;text-align:end;font-size:12.5px;margin:-8px 0 14px;
+}
 #phoneSection{text-align:start;}
 .phone-input-group{display:flex;gap:8px;}
 .phone-prefix{

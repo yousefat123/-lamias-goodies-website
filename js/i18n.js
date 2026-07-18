@@ -75,7 +75,10 @@ const I18N = {
     verificationCodeLabel: "رمز التحقق",
     verifyCode: "تحقق",
     phoneInvalid: "الرجاء إدخال رقم هاتف صحيح.",
-    codeSent: "تم إرسال الرمز عبر رسالة نصية."
+    codeSent: "تم إرسال الرمز عبر رسالة نصية.",
+    forgotPassword: "نسيت كلمة المرور؟",
+    resetEmailRequired: "الرجاء إدخال بريدك الإلكتروني أولاً.",
+    resetEmailSent: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني."
   },
   he: {
     dir: "rtl",
@@ -151,7 +154,10 @@ const I18N = {
     verificationCodeLabel: "קוד אימות",
     verifyCode: "אימות",
     phoneInvalid: "נא להזין מספר טלפון תקין.",
-    codeSent: "קוד נשלח אליך במסרון."
+    codeSent: "קוד נשלח אליך במסרון.",
+    forgotPassword: "שכחת סיסמה?",
+    resetEmailRequired: "יש להזין קודם את כתובת המייל שלך.",
+    resetEmailSent: "קישור לאיפוס הסיסמה נשלח לכתובת המייל שלך."
   },
   en: {
     dir: "ltr",
@@ -227,6 +233,9 @@ const I18N = {
     verificationCodeLabel: "Verification Code",
     verifyCode: "Verify",
     phoneInvalid: "Please enter a valid phone number.",
-    codeSent: "A code was sent via SMS."
+    codeSent: "A code was sent via SMS.",
+    forgotPassword: "Forgot password?",
+    resetEmailRequired: "Please enter your email first.",
+    resetEmailSent: "A password reset link was sent to your email."
   }
 };
