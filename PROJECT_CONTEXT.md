@@ -147,10 +147,16 @@ connected to this project.
 
 ## Environment notes for Claude Code
 
-- Git has not been initialized yet. User is new to git on Windows; plan is
-  to install Git for Windows, then run `git init && git add . && git
-  commit -m "Initial site"` inside this folder, create an empty GitHub repo
-  (no README/gitignore, since one already exists here), then `git remote
-  add origin <url> && git branch -M main && git push -u origin main`.
+- **Git is now initialized** (local only, `master` branch, initial commit
+  "Initial site" made 2026-07-18). Not yet pushed to GitHub — no remote
+  configured. `.claude/settings.local.json` is gitignored (machine-local
+  Claude Code permissions, not project content).
+- **Remaining git step:** create an empty GitHub repo (no README/gitignore,
+  since one already exists here), then `git remote add origin <url> &&
+  git branch -M main && git push -u origin main`.
 - All file/folder names must stay space-free (hyphens only) per explicit
   project convention.
+- **Keep this file up to date.** Update PROJECT_CONTEXT.md after each
+  meaningful change/decision in this project, not just at the end of a
+  session — this is an explicit standing instruction from the user
+  (2026-07-18).
