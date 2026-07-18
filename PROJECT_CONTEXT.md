@@ -89,6 +89,19 @@ is untouched and still the primary/fastest path.
 Full plan (architecture, file list, rules, phasing) is preserved at
 `C:\Users\youse\.claude\plans\replicated-mixing-sun.md` on this machine.
 
+**Email verification** (added 2026-07-18): email/password sign-ups get a
+verification email via Firebase Auth's `sendEmailVerification`; a banner on
+`account.html` (with a resend button) shows for unverified email/password
+accounts only — Google accounts are already verified identities, so they
+never see it. Nothing is gated behind verification yet (browsing, ordering,
+even admin access all work regardless) — it's informational only for now.
+
+**Apple sign-in explicitly declined a second time** (2026-07-18, user
+re-asked "add Google and Apple," confirmed to skip Apple again when told
+about the $99/yr Apple Developer Program cost + needing real credentials
+from that account that Claude can't obtain). Google sign-in already existed
+from Phase 2. Revisit only if the user brings it up with the cost in mind.
+
 **Live Firebase project:** `lamias-goodies` (created 2026-07-18 by the user
 in Firebase Console). Real `firebaseConfig` values are committed in
 `js/firebase-config.js` (safe — not secrets). Auth providers, Firestore, and
