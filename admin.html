@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lamia's Goodies — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Almarai:wght@400;700&family=Rubik:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-lang="ar">
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-mark">LG</div>
+      <div class="brand-name" data-i18n="adminPanel">لوحة التحكم</div>
+    </div>
+    <div class="lang-switch">
+      <button data-setlang="ar" class="active">AR</button>
+      <button data-setlang="he">עב</button>
+      <button data-setlang="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap admin-wrap">
+    <a class="back-link" href="index.html" data-i18n="backToSite">العودة إلى الموقع</a>
+
+    <div id="adminLoginBox" class="admin-panel" hidden>
+      <div class="field-row">
+        <label data-i18n="emailLabel">البريد الإلكتروني</label>
+        <input type="email" id="adminEmail" autocomplete="username">
+      </div>
+      <div class="field-row">
+        <label data-i18n="passwordLabel">كلمة المرور</label>
+        <input type="password" id="adminPassword" autocomplete="current-password">
+      </div>
+      <div id="adminAuthError" class="form-error" hidden></div>
+      <div class="cta-row">
+        <button class="btn btn-primary" id="adminSignInBtn" data-i18n="signIn">تسجيل الدخول</button>
+        <button class="btn btn-ghost" id="adminGoogleBtn" data-i18n="continueWithGoogle">المتابعة عبر جوجل</button>
+      </div>
+    </div>
+
+    <div id="adminNotAuthorized" class="admin-panel" hidden>
+      <p data-i18n="notAuthorizedAdmin"></p>
+      <button class="btn btn-ghost" id="adminSignOutBtn2" data-i18n="signOut">تسجيل الخروج</button>
+    </div>
+
+    <div id="adminContent" hidden>
+      <div class="admin-toolbar">
+        <h2 data-i18n="manageProducts">إدارة المنتجات</h2>
+        <div class="cta-row">
+          <button class="btn btn-ghost" id="importLegacyBtn" data-i18n="importLegacyProducts">استيراد المنتجات الحالية</button>
+          <button class="btn btn-ghost" id="adminSignOutBtn" data-i18n="signOut">تسجيل الخروج</button>
+        </div>
+      </div>
+
+      <form id="productForm" class="admin-panel product-form-grid">
+        <input type="hidden" id="productDocId">
+        <div class="field-row" id="productIdRow">
+          <label>ID</label>
+          <input type="text" id="productId" placeholder="CAK-001">
+        </div>
+        <div class="field-row">
+          <label data-i18n="categoryLabel">الفئة</label>
+          <input type="text" id="productCategory" placeholder="cakes / maamoul / sweets">
+        </div>
+        <div class="field-row">
+          <label data-i18n="priceLabel">السعر (₪)</label>
+          <input type="number" id="productPrice" min="0" step="1">
+        </div>
+        <div class="field-row">
+          <label data-i18n="nameArLabel">الاسم (عربي)</label>
+          <input type="text" id="nameAr">
+        </div>
+        <div class="field-row">
+          <label data-i18n="nameHeLabel">الاسم (عبري)</label>
+          <input type="text" id="nameHe">
+        </div>
+        <div class="field-row">
+          <label data-i18n="nameEnLabel">الاسم (إنجليزي)</label>
+          <input type="text" id="nameEn">
+        </div>
+        <div class="field-row">
+          <label data-i18n="descArLabel">الوصف (عربي)</label>
+          <input type="text" id="descAr">
+        </div>
+        <div class="field-row">
+          <label data-i18n="descHeLabel">الوصف (عبري)</label>
+          <input type="text" id="descHe">
+        </div>
+        <div class="field-row">
+          <label data-i18n="descEnLabel">الوصف (إنجليزي)</label>
+          <input type="text" id="descEn">
+        </div>
+        <div class="field-row">
+          <label data-i18n="uploadPhoto">رفع صورة</label>
+          <input type="file" id="productPhoto" accept="image/*">
+        </div>
+        <div class="field-row field-row-checkbox">
+          <label data-i18n="availableLabel">متوفر</label>
+          <input type="checkbox" id="productAvailable" checked>
+        </div>
+        <div id="productFormError" class="form-error" hidden></div>
+        <div class="cta-row">
+          <button type="submit" class="btn btn-primary" id="productSaveBtn" data-i18n="saveChanges">حفظ</button>
+          <button type="button" class="btn btn-ghost" id="productCancelBtn" data-i18n="cancel" hidden>إلغاء</button>
+        </div>
+      </form>
+
+      <div id="adminProductList" class="admin-product-list"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div data-i18n="footerNote">لمياء غودز — صُنع بحب 🍯</div>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/products-data.js"></script>
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>

@@ -1,9 +1,12 @@
-// Temporary hardcoded product data, pulled from the Google Sheet + Drive photos
-// as of the last manual sync. Once CONFIG.productsApiUrl (config.js) points to
-// a deployed Apps Script Web App, app.js will fetch live data instead and this
-// file becomes a fallback only.
+// Fallback product catalog, used in two situations:
+// 1. Firestore is unreachable or not yet configured (js/firebase-config.js) —
+//    app.js keeps showing this array so guest browsing/ordering never breaks.
+// 2. The one-time "Import legacy products" button in the admin panel
+//    (js/admin.js) reads this array to seed the real products/ collection
+//    in Firestore. After that, Firestore is the live source of truth and
+//    products are managed from the admin panel, not this file.
 //
-// Known data issues to fix in the source sheet:
+// Known data issues (harmless for now, worth fixing before/during import):
 // - MAA-001/002/003 currently share one placeholder photo (only one maamoul
 //   photo has been uploaded so far). Update photoId per item once real
 //   photos exist for walnut and pistachio maamoul.

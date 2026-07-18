@@ -27,66 +27,97 @@ development in Claude Code. Read this before making changes.
 - **WhatsApp number:** 0547751481 (international format used in code:
   `972547751481`).
 
-## Data pipeline: Google Drive + Sheets as the content backend
+## Accounts, admin panel, and live product data: Firebase (supersedes the old Google Sheets plan)
 
-Decision: use Google Sheets as the editable "backend" so Yousef's mother can
-add products without any code changes, via a Google Apps Script Web App
-(not yet built — see Next Steps).
+**Decision (2026-07-18):** the previously-planned Google Sheets + Apps Script
+backend was never built and has been fully replaced by **Firebase**
+(Auth + Firestore + Storage), since Firebase was needed anyway for customer
+accounts and an admin panel — one system instead of two. The Google Sheet /
+Drive folder described in earlier versions of this doc is **no longer the
+plan**; product data now lives in Firestore and is managed from `admin.html`.
 
-**Drive folder structure (created manually in the user's Google Drive):**
-```
-Lamia's Goodies - Website/          (root — should be renamed, spaces/apostrophe
-                                      are against the project's naming convention)
-  lamias-goodies-products-template.xlsx   (the live product data)
-  Photos/
-    Cakes/            CAK-001.jpg
-    Sweets/            SWE-OO1.jpg   (typo: letters OO, not zeros — kept as-is
-                                       since it matches the sheet's filename)
-    Tradetional arabic sweets/   MAA-001.jpg   (category name has a typo, and
-                                       this one photo is shared by 3 different
-                                       products — see Known Issues)
-```
+**Why Firebase:** free tier, no server to run or maintain (fits the "static
+site, no build step" constraint — the JS SDK is loaded via CDN ES module
+imports, no bundler needed), and it covers auth + database + file storage in
+one place.
 
-**Spreadsheet columns:** `id, category, name_ar, name_he, name_en,
-description_ar, description_he, description_en, price, photo_filename,
-available`
+**Scope decided with the user:**
+- Customer accounts: email/password **and** Google sign-in (Apple sign-in
+  explicitly excluded — costs $99/yr via Apple Developer Program, skipped
+  for now, can be added later if justified). Account holds: profile
+  (name, phone, address), order history, and favorites/wishlist.
+- Admin account: exactly one, locked to `yousef3talla@gmail.com`
+  (`CONFIG.adminEmail` in `js/config.js` — UI hint only; real enforcement is
+  in `firestore.rules`/`storage.rules`, checking
+  `request.auth.token.email == 'yousef3talla@gmail.com'`, since there's no
+  server to set custom claims). Admin can manage products (add/edit/delete,
+  upload photos) and, once Phase 3 lands, view/manage orders.
+- **Hard constraint:** guest WhatsApp ordering must keep working exactly as
+  before, unmodified, for anyone who doesn't want an account — login is
+  additive, never a gate on browsing or ordering. Every Firebase-dependent
+  call in `app.js` is guarded with `window.LamiaFirebase?.foo?.()` so a
+  Firebase outage or missing config never breaks the guest flow.
+- Guest (not-logged-in) orders **are** recorded to Firestore too (for full
+  admin visibility) — accepted trade-off: no server-side rate limiting, so
+  `orders.create` rules validate shape but can't fully block spam; revisit
+  with Firebase App Check later if it becomes a real problem.
 
-## Known data issues (fix in the source sheet, not just in code)
+**Firestore schema:**
+- `products/{id}` — `name{ar,he,en}`, `desc{ar,he,en}`, `category`, `price`,
+  `photoUrl` (Storage URL), `available`, `createdAt`, `updatedAt`.
+- `users/{uid}` — `email`, `displayName`, `phone`, `address`, timestamps.
+- `users/{uid}/favorites/{productId}` — doc id = productId (idempotent toggle).
+- `orders/{id}` — one doc per order-button click: `userId` (uid or `null`
+  for guest), `productId`, `productName`, `price`, `lang`, `status`
+  (`pending|fulfilled|cancelled`), `createdAt`, `source: "whatsapp"`.
 
-1. **Duplicate ids/photos:** `MAA-001` is used for three different products
-   (date, walnut, pistachio maamoul), all currently pointing at the same
-   photo. Needs unique ids (`MAA-001`, `MAA-002`, `MAA-003`, already
-   reflected in code) and a distinct photo per item once available.
-2. **Category typo:** sheet category cell reads "Tradetional arabic sweets."
-   Code already maps these correctly to a `maamoul` category regardless.
-3. **Filename typo:** `SWE-OO1.jpg` uses the letters "OO" instead of zeros.
-   Functions fine since it's consistent between the sheet and the actual
-   file, but worth fixing to the `SWE-001` convention going forward.
+Full plan (architecture, file list, rules, phasing) is preserved at
+`C:\Users\youse\.claude\plans\replicated-mixing-sun.md` on this machine.
+
+## Known data issues from the old hardcoded catalog (relevant to the Firestore import, not a live sheet anymore)
+
+1. **Duplicate ids/photos:** `MAA-001`/`002`/`003` (date, walnut, pistachio
+   maamoul) currently share one photo. Fix by uploading a distinct photo per
+   item via the admin panel's Upload Photo field once real photos exist.
+2. **Filename typo (legacy, cosmetic only):** the old Drive file was named
+   `SWE-OO1.jpg` (letters "OO" instead of zeros) — irrelevant once each
+   product has a real Storage-uploaded photo.
 
 ## Site architecture (current state)
 
 Static HTML/CSS/JS, no framework, no build step. File/folder names use
-hyphens only — no spaces, per explicit instruction.
+hyphens only — no spaces, per explicit instruction. New Firebase code is
+loaded as ES modules (`type="module"`) after the original classic scripts;
+`app.js` stays a classic script and is bridged via `window.LamiaFirebase`
+and `window.setLiveProducts()` (see Firebase section above).
 
 ```
 lamias-goodies-website/
   index.html
+  admin.html             admin panel: product CRUD, photo upload, one-time
+                          "Import legacy products" migration button
   css/styles.css
   js/
-    config.js           WhatsApp number + productsApiUrl (null until the
-                          Apps Script backend is deployed)
-    i18n.js               all UI strings + category labels, per language
-    products-data.js      hardcoded product catalog (temporary — see Known
-                          Issues above for what's wrong in it), plus the
-                          photoUrl() helper
-    app.js                rendering, language switching, WhatsApp link
-                          building, and loadProducts() which already
-                          contains the fetch-from-API logic, just needs
-                          config.productsApiUrl set
-  assets/icons/           empty, placeholder for future PWA icons
+    config.js             WhatsApp number + adminEmail
+    i18n.js                all UI strings + category labels, per language
+    products-data.js       fallback catalog (used if Firestore is
+                          unreachable/unconfigured) + migration source
+    firebase-config.js     Firebase CDN imports, project config (fill in
+                          real values here once the Firebase project
+                          exists), fetches live products -> setLiveProducts()
+    admin.js                admin.html logic: auth-gated product CRUD
+    app.js                  rendering, language switching, WhatsApp link
+                          building, exposes window.setLiveProducts()
+  firestore.rules          paste into Firebase Console -> Firestore -> Rules
+  storage.rules            paste into Firebase Console -> Storage -> Rules
+  assets/icons/            empty, placeholder for future PWA icons
   README.md
   .gitignore
 ```
+
+Not yet built (see Next Steps): `js/auth.js` (customer sign-in/up modal),
+`account.html`/`js/account.js` (profile, favorites, order history),
+favorites/order-recording wiring in `app.js`.
 
 **Design tokens used:** cream background (#FAF3E6), amber (#C17F2B) +
 burgundy (#7C2C3B) accents, ink text (#2B2018). Fonts: Cairo (Arabic
@@ -94,44 +125,54 @@ display), Almarai (Arabic body), Rubik (Hebrew), Fredoka (English display),
 Inter (English body) — swapped via `body[data-lang]` CSS selectors. Visual
 signature: a scalloped divider under the hero, evoking a maamoul mold edge.
 
-## Known bug: product images don't load when the site is opened
+## Known bug: product images (status: fix in progress via Firebase Storage)
 
-Two separate causes identified in this conversation, both should be checked:
-
-1. **Google Drive hotlinking is unreliable.** Images currently load via
-   `https://drive.google.com/thumbnail?id=...&sz=w600`. This only works if
-   each individual file (not just the parent folder) is shared "Anyone with
-   the link," and even then it's an unofficial trick Google can break or
-   rate-limit at any time. **Recommended real fix:** download the actual
-   photos and put them in `assets/images/` in the project, reference them
-   with local relative paths instead of Drive URLs. Trade-off: new photos
-   the mother uploads to Drive won't auto-appear until someone copies them
-   into the project — acceptable until the Apps Script backend exists.
-2. **Opening index.html from inside an unextracted zip breaks relative
-   paths.** If `index.html` is opened directly from within Windows'
-   zip-browsing view rather than a fully extracted folder, `css/styles.css`
-   and the `js/*.js` files fail to load (404), which looks like "the page
-   loads but there are no products" since the static HTML shows but
-   `app.js` never runs to render the product grid. Always fully extract
-   the zip first.
+The user reported this fixed on their end (likely via Drive sharing
+permissions) as of 2026-07-18, but the durable fix is Firebase Storage —
+once each product's photo is uploaded through `admin.html`'s Upload Photo
+field, `photoUrl` in Firestore becomes a real Storage URL and the Drive
+dependency (and its "Anyone with the link" fragility) goes away entirely.
+Until then, `js/products-data.js`'s old Drive-hotlink `photoUrl(photoId)`
+helper is kept as the interim value the "Import legacy products" button
+writes to Firestore, so the storefront isn't left with broken images mid-
+migration. (The unextracted-zip gotcha from earlier — opening `index.html`
+from inside Windows' zip-browsing view breaks relative paths — no longer
+applies now that the site is deployed via GitHub Pages, not opened locally.)
 
 ## Next steps, in priority order
 
-1. **Fix known data issues** in the source sheet (see above) while the
-   catalog is still small.
-2. **Move product images local** (`assets/images/`) instead of hotlinking
-   Drive, per the bug above.
-3. **Build the Google Apps Script Web App** that serves the sheet as JSON,
-   then set `CONFIG.productsApiUrl` in `js/config.js` — `loadProducts()` in
-   `app.js` already handles the fetch, this is the only wiring needed.
-4. **Deploy to a real URL** — Vercel, Netlify, or GitHub Pages (all free
-   for a static site like this).
-5. **Make it installable** — add `manifest.json` + real icons in
-   `assets/icons/` for "Add to Home Screen" (PWA basics).
-6. **Soft-launch** with real customers via the WhatsApp flow, before
-   building anything more complex.
-7. **Cart + real payment** only once real order volume justifies it — use
-   an Israeli processor (Tranzila/Cardcom), not Stripe/Square.
+Implementing the Firebase accounts + admin panel feature (see plan at
+`C:\Users\youse\.claude\plans\replicated-mixing-sun.md`), phase by phase:
+
+1. ✅ **Phase 1 — Firebase wiring + product migration** (done 2026-07-18):
+   `js/firebase-config.js`, `admin.html`/`js/admin.js` (product CRUD, photo
+   upload, legacy-import button), `firestore.rules`/`storage.rules` written.
+   Verified locally: guest browsing/ordering still works unaffected when
+   Firebase is unconfigured; `admin.html` correctly shows a disabled
+   login state. **Blocked on the user**: create the Firebase project and
+   send back the real `firebaseConfig` values (see checklist in the plan
+   file) so `js/firebase-config.js` can be filled in and this phase can be
+   tested end-to-end (Firestore reads/writes, Storage upload, import button).
+2. **Phase 2 — Auth** (`js/auth.js`, header sign-in modal, `users/{uid}`
+   creation on first login) — not started, purely additive once built.
+3. **Phase 3 — Order recording** (`orders` collection + admin order list) —
+   not started.
+4. **Phase 4 — Favorites** (heart button + `users/{uid}/favorites`) — not
+   started.
+5. **Phase 5 — Account page** (`account.html`/`js/account.js`: profile,
+   favorites, order history) — not started.
+6. **Phase 6 — Polish & docs** (product edit/delete refinement, order status
+   workflow, remove residual Drive dependency) — not started.
+
+Deferred until the above is done and soft-launched:
+- **Make it installable** — `manifest.json` + real icons in `assets/icons/`.
+- **Cart + real payment** only once real order volume justifies it — use an
+  Israeli processor (Tranzila/Cardcom), not Stripe/Square.
+
+**Still outstanding, not yet confirmed done:** enabling GitHub Pages
+(Settings -> Pages -> Deploy from branch `main` -> Save) — walked the user
+through the steps but never got confirmation it was actually turned on.
+Verify before assuming the site is publicly live.
 
 ## Broader context explored earlier (not part of this site, background only)
 

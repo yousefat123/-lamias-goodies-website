@@ -2,8 +2,8 @@
 const CONFIG = {
   whatsappNumber: "972547751481", // international format, no leading 0 or +
 
-  // Once the Google Sheet is wired up as a live backend (Apps Script Web App),
-  // set this to that deployment's URL and app.js will fetch products from it
-  // instead of using the hardcoded PRODUCTS array in products-data.js.
-  productsApiUrl: null
+  // Email of the single admin account. Used only for UI hints (e.g. showing
+  // the "Admin Panel" link) — real authorization always happens via Firebase
+  // Auth + Firestore/Storage security rules, never trusted from this file alone.
+  adminEmail: "yousef3talla@gmail.com"
 };

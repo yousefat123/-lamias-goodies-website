@@ -140,3 +140,48 @@ footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
   .brand-name{font-size:16px;}
   .hero{padding:34px 0 24px;}
 }
+
+/* admin panel */
+.admin-wrap{padding:26px 0 50px;}
+.back-link{
+  display:inline-block;margin-bottom:18px;
+  color:var(--burgundy);text-decoration:none;font-weight:600;font-size:14px;
+}
+.admin-panel{
+  background:var(--cream);border:1px solid var(--line);border-radius:16px;
+  padding:22px;margin-bottom:22px;
+}
+.admin-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;margin-bottom:18px;
+}
+.admin-toolbar h2{font-size:20px;color:var(--ink);}
+.field-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.field-row label{font-size:13px;font-weight:600;color:#6B5B49;}
+.field-row input[type="text"],
+.field-row input[type="email"],
+.field-row input[type="password"],
+.field-row input[type="number"],
+.field-row input[type="file"]{
+  border:1.5px solid var(--line);border-radius:10px;
+  padding:10px 12px;font-size:14px;font-family:inherit;background:var(--card);color:var(--ink);
+}
+.field-row-checkbox{flex-direction:row;align-items:center;gap:10px;}
+.field-row-checkbox input{width:18px;height:18px;}
+.form-error{
+  background:#FBE4E4;color:#8A2A2A;border-radius:10px;
+  padding:10px 12px;font-size:13.5px;margin-bottom:14px;
+}
+.product-form-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(240px,1fr));gap:0 18px;}
+.product-form-grid .form-error,
+.product-form-grid .cta-row{grid-column:1/-1;}
+.admin-product-list{display:flex;flex-direction:column;gap:10px;}
+.admin-product-row{
+  display:flex;align-items:center;gap:14px;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;
+}
+.admin-product-row img{
+  width:56px;height:56px;border-radius:10px;object-fit:cover;background:var(--gold-fill);flex-shrink:0;
+}
+.admin-product-row-info{display:flex;flex-direction:column;gap:3px;flex:1;}
+.admin-product-row-info span{font-size:12.5px;color:#7A6A57;}

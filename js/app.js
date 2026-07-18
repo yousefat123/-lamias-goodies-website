@@ -1,25 +1,20 @@
 let currentLang = "ar";
 let currentCat = "all";
-let products = PRODUCTS; // replaced with live data in loadProducts() if configured
+let products = PRODUCTS; // replaced with live Firestore data via setLiveProducts() if configured
 
 function waLink(text) {
   return `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(text)}`;
 }
 
-async function loadProducts() {
-  if (!CONFIG.productsApiUrl) {
-    products = PRODUCTS;
-    return;
-  }
-  try {
-    const res = await fetch(CONFIG.productsApiUrl);
-    const data = await res.json();
-    products = data;
-  } catch (err) {
-    console.error("Failed to load live product data, falling back to local copy:", err);
-    products = PRODUCTS;
-  }
-}
+// Called by js/firebase-config.js (an ES module, loaded after this classic
+// script) once the live catalog has loaded. Kept as a plain global function
+// rather than converting app.js to a module, so currentLang/currentCat stay
+// simple globals other classic scripts can rely on.
+window.setLiveProducts = function (liveProducts) {
+  products = liveProducts;
+  renderCategories();
+  renderProducts();
+};
 
 function applyLang(lang) {
   currentLang = lang;
@@ -69,8 +64,9 @@ function renderProducts() {
   list.forEach((p) => {
     const card = document.createElement("div");
     card.className = "product";
+    const imgSrc = p.photoUrl || (p.photoId ? photoUrl(p.photoId) : "");
     card.innerHTML = `
-      <img src="${photoUrl(p.photoId)}" alt="${p.name[currentLang]}" loading="lazy">
+      <img src="${imgSrc}" alt="${p.name[currentLang]}" loading="lazy">
       <div class="product-body">
         <div class="product-cat">${t.categories[p.category] || p.category}</div>
         <div class="product-name">${p.name[currentLang]}</div>
@@ -88,8 +84,7 @@ function renderProducts() {
   });
 }
 
-async function init() {
-  await loadProducts();
+function init() {
   document.querySelectorAll(".lang-switch button").forEach((b) => {
     b.addEventListener("click", () => applyLang(b.getAttribute("data-setlang")));
   });
