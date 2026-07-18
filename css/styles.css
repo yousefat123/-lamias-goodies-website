@@ -135,6 +135,11 @@ footer{
   text-align:center;padding:26px 20px 34px;color:#8a7a66;font-size:12.5px;
 }
 footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
+.admin-link{
+  display:block;margin-top:10px;font-size:11px;font-weight:500;
+  color:#b0a390;opacity:.8;
+}
+.admin-link:hover{color:var(--burgundy);opacity:1;}
 
 @media (max-width:480px){
   .brand-name{font-size:16px;}
