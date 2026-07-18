@@ -1,7 +1,7 @@
 import { auth, isConfigured } from "./firebase-config.js";
 import {
   onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider
+  signInWithPopup, GoogleAuthProvider, sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
 // Only ever redirect to a known page of this site — never trust the raw
@@ -80,23 +80,32 @@ if (!isConfigured) {
   submitBtn.disabled = true;
   document.getElementById("loginGoogleBtn").disabled = true;
 } else {
+  // Suppressed while a sign-in/sign-up action is in flight below, so that
+  // action can finish its own steps (e.g. sending the verification email)
+  // before navigating away — otherwise this listener firing the instant
+  // Firebase reports a user would redirect first and race that step.
+  let suppressAutoRedirect = false;
+
   onAuthStateChanged(auth, (user) => {
-    if (user) location.href = getNextUrl();
+    if (user && !suppressAutoRedirect) location.href = getNextUrl();
   });
 
   document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     errorEl.hidden = true;
+    suppressAutoRedirect = true;
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
     try {
       if (mode === "signup") {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await sendEmailVerification(cred.user);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
       location.href = getNextUrl();
     } catch (err) {
+      suppressAutoRedirect = false;
       showError(err);
     }
   });

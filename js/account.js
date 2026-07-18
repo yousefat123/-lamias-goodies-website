@@ -1,5 +1,5 @@
 import { auth, db, isConfigured } from "./firebase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
   doc, getDoc, updateDoc, deleteDoc, collection, getDocs, query, where, orderBy
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -52,11 +52,24 @@ if (!isConfigured) {
     }
     signedOutBox.hidden = true;
     contentBox.hidden = false;
+    verifyBanner.hidden = user.emailVerified || user.providerData.every((p) => p.providerId !== "password");
     await loadProfile(user);
     await loadFavorites(user);
     await loadOrders(user);
   });
 }
+
+// ---- Email verification ----
+// Only relevant for email/password accounts — Google sign-in is already
+// a verified identity, so the banner never shows for those users.
+
+const verifyBanner = document.getElementById("emailVerifyBanner");
+document.getElementById("resendVerificationBtn").addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) return;
+  await sendEmailVerification(user);
+  verifyBanner.querySelector("span").textContent = I18N[lang()].verificationEmailSent;
+});
 
 // ---- Profile ----
 

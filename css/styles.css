@@ -300,6 +300,11 @@ footer a{color:var(--burgundy);text-decoration:none;font-weight:600;}
   background:#FBE4E4;color:#8A2A2A;border-radius:10px;
   padding:10px 12px;font-size:13.5px;margin-bottom:14px;
 }
+#emailVerifyBanner{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;
+}
+#emailVerifyBanner .btn{padding:6px 14px;font-size:12.5px;flex-shrink:0;}
 .form-success{
   background:#DCEFDD;color:#2E7D32;border-radius:10px;
   padding:10px 12px;font-size:13.5px;margin-bottom:14px;

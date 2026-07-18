@@ -67,7 +67,10 @@ const I18N = {
     cartWaMsg: (lines, total) => `مرحبًا، أرغب بطلب التالي:\n${lines}\n\nالإجمالي: ₪${total}`,
     orDivider: "أو",
     welcomeBack: "مرحبًا بعودتك",
-    createAccountTitle: "إنشاء حساب جديد"
+    createAccountTitle: "إنشاء حساب جديد",
+    verificationEmailSent: "تم إرسال رابط تأكيد إلى بريدك الإلكتروني.",
+    emailNotVerified: "لم يتم تأكيد بريدك الإلكتروني بعد.",
+    resendVerification: "إعادة إرسال رابط التأكيد"
   },
   he: {
     dir: "rtl",
@@ -135,7 +138,10 @@ const I18N = {
     cartWaMsg: (lines, total) => `שלום, אני רוצה להזמין:\n${lines}\n\nסה"כ: ₪${total}`,
     orDivider: "או",
     welcomeBack: "ברוכים השבים",
-    createAccountTitle: "יצירת חשבון חדש"
+    createAccountTitle: "יצירת חשבון חדש",
+    verificationEmailSent: "נשלח קישור אימות לכתובת המייל שלך.",
+    emailNotVerified: "כתובת המייל שלך עדיין לא אומתה.",
+    resendVerification: "שליחה חוזרת של קישור האימות"
   },
   en: {
     dir: "ltr",
@@ -203,6 +209,9 @@ const I18N = {
     cartWaMsg: (lines, total) => `Hi, I'd like to order:\n${lines}\n\nTotal: ₪${total}`,
     orDivider: "or",
     welcomeBack: "Welcome back",
-    createAccountTitle: "Create a new account"
+    createAccountTitle: "Create a new account",
+    verificationEmailSent: "A verification link was sent to your email.",
+    emailNotVerified: "Your email address isn't verified yet.",
+    resendVerification: "Resend verification email"
   }
 };
